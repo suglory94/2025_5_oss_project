@@ -1,0 +1,7 @@
+const asyncHandler = require("express-async-handler");
+
+const getParallels = asyncHandler(async (requestAnimationFrame, res) => {
+    res.send("Parallel Page"));
+})
+
+module.exports = getParallels;

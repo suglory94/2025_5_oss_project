@@ -1,0 +1,25 @@
+{
+  "name": "ossproject5",
+  "version": "1.0.0",
+  "description": "![Image](images/parallel_universe_simulator.png)",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suglory94/2025_5_oss_project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/suglory94/2025_5_oss_project/issues"
+  },
+  "homepage": "https://github.com/suglory94/2025_5_oss_project#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-async-handler": "^1.2.0",
+    "mongoose": "^8.20.0"
+  }
+}
