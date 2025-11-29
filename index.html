@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!--모바일 깨짐 방지-->
+    <title>평행우주시뮬레이션</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 배경 애니메이션 효과 -->
+        <div class="background-effects">
+            <div class="effect-circle effect-1"></div>
+            <div class="effect-circle effect-2"></div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="content">
+            <h1 class="title">평행우주시뮬레이션</h1>
+            
+            <div class="button-group">
+                <button class="btn btn-outline" onclick="showHistory()">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    히스토리
+                </button>
+                
+                <button class="btn btn-primary" onclick="startSimulation()">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    시작
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startSimulation() {
+            console.log('시뮬레이션 시작');
+            alert('시뮬레이션을 시작합니다!');
+        }
+
+        function showHistory() {
+            console.log('히스토리 보기');
+            alert('히스토리 페이지로 이동합니다!');
+        }
+    </script>
+</body>
+</html>
