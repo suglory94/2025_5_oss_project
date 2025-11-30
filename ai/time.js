@@ -67,13 +67,13 @@ export async function ClassStatus(day, period) {
 
 // 메인 함수
 export async function ClassInfo() {
-  const Day = getDay();
+  const Day = GetDay();
   const Class = GetClass();
 
-  if (Class === null) {
+  if (Class === 0) {
     return {
       Day,
-      Class: null,
+      Class: 0,
       hasClass: -1,
       message: "지금은 선택지 제공 시간이 아님"
     };
