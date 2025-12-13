@@ -1,8 +1,8 @@
 import axios from "axios";
 
 
-// 현재 요일 계산
-const days = [
+// 1) 현재 요일 계산
+const DAYS = [
   "sunday",
   "monday",
   "tuesday",
@@ -12,15 +12,13 @@ const days = [
   "saturday"
 ];
 
-export function GetDay() {
-  const now = new Date();
-  return days[now.getDay()];
+export function getToday() {
+  return DAYS[new Date().getDay()];
 }
 
 
-// 현재 교시 계산 
-// 해당 교시의 수업 시작 30분 전에 선택지 제공
-export function GetClass() {
+// 2) 다음 교시 계산
+export function NextClass() {
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
@@ -38,19 +36,18 @@ export function GetClass() {
     { class: 7, start: 1080 }  // 18:00 ~ 18:50
   ];
 
-  // “시작 30분 전” 기준으로 period 활성화
-  for (const t of classes) {
-    if (time >= t.start - 30 && time < t.start) {
-      return t.class;
-    }
+  // 다음 교시 찾기; 
+  for (const p of classes){
+    if(p.start>time)
+      return p.class;
   }
 
-  return 0; // 선택을 할 수 있는 시간이 아님
+  return null;
 }
 
 
-// 3) 백엔드에게 이 교시에 수업 있는지 요청
-export async function ClassStatus(day, period) {
+// 3) 백엔드한테 해당 교시에 수업 있는지 요청
+export async function checkClassStatus(day, period) {
   try {
     const response = await axios.post(
       "http://localhost:3000/api/schedule/check", //*backend
@@ -60,30 +57,7 @@ export async function ClassStatus(day, period) {
     return response.data.hasClass; // *backend
   } catch (error) {
     console.error("수업 여부 조회 실패:", error);
-    return -1;  // 실패하면 false로 처리
+    return null;  // 실패하면 false로 처리
   }
 }
 
-
-// 메인 함수
-export async function ClassInfo() {
-  const Day = GetDay();
-  const Class = GetClass();
-
-  if (Class === 0) {
-    return {
-      Day,
-      Class: 0,
-      hasClass: -1,
-      message: "지금은 선택지 제공 시간이 아님"
-    };
-  }
-
-  const hasClass = await ClassStatus(Day, Class);
-
-  return {
-    Day,
-    Class,
-    hasClass
-  };
-}

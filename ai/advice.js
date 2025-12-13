@@ -6,14 +6,14 @@ import { client } from "./openaiClient.js";
 async function Stats() {
   try {
     const response = await axios.get("http://localhost:3000/api/stats"); // *backend
-    // *backend _ 백엔드에서 변수명 확인하고 수정해야함
+    // *backend _ 백엔드에서 각 카테고리의 변수명 확인하고 수정해야함
     return {
       grade: response.data.grade,
       sleep: response.data.sleep,
       finance: response.data.finance
     };
   } catch (error) {
-    console.error("⚠️ 백엔드 '학점, 수면, 재정' 조회 실패:", error);
+    console.error("백엔드로부터 '학점, 수면, 재정' 조회 실패:", error);
     return {
       grade: null,
       sleep: null,
