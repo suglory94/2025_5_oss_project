@@ -446,6 +446,31 @@ const getDailyChoices = asyncHandler(async (req, res) => {
     });
 });
 
+// 학습 시간, 수면, 재정 상태 조회
+const getRawStats = asyncHandler(async (req, res) => {
+    const settings = await UserSettings.findOne();
+    const choices = await HourlyChoice.find().sort({ dat: 1, hour: 1 });
+    const scheduleDoc = await Schedule.findOne();
+
+    if (!settings || !scheduleDoc) {
+        return res.status(404).json({ message: "초기 설정 데이터가 없습니다" });
+    }
+    const currentSleepMinutes = settings.totalSleepMinutes;
+    const currentFinance = settings.currentBudget;
+    const classChoices = choices.filter(c => c.choiceType === "class");
+    const attendedClasses = classChoices.filter(
+        c => c.choice === "attend" || c.choice === "attend_coffee").length;
+    const totalClassHours = classChoices.length;
+    const attendanceRate = totalClassHours > 0 ? Math.round((attendClasses / totalClassHours) * 100) : 100;
+
+    res.status(200).json({
+        grade: attendanceRate,
+        sleep: currentSleepMinutes,
+        finance: currentFinance,
+        weakestState: weakestState
+    })
+});
+
 // 선택 수정
 const updateChoice = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -533,6 +558,7 @@ module.exports = {
     getWeeklyStatistics,
     getWeeklyHistory,
     getDailyChoices,
+    getRawStats,
     updateChoice,
     deleteChoice
 };
