@@ -102,6 +102,7 @@ body {
 .button-group {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
     gap: 40px;
     margin-top: 40px;
@@ -208,7 +209,6 @@ body {
     inset: 0;
     z-index: 50;
 
-    display: flex;
     justify-content: center;
     align-items: center;
 }

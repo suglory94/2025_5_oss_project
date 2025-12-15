@@ -78,13 +78,11 @@
     </div>
 
     <script>
-        function goToChoiceScreen() {
-            document.getElementById('choiceScreen').style.display = 'flex';
-        }
 
-        function goBackToHome() {
-            document.getElementById('choiceScreen').style.display = 'none';
-        }
+        const WEEKDAYS = ["월", "화", "수", "목", "금"];
+        const PERIODS = [1, 2, 3, 4, 5, 6];
+
+        let timetableData = [];
 
         function showHistory() {
             console.log('히스토리 보기');
@@ -99,6 +97,14 @@
         function selectChoice(choice) {
             console.log('선택: ' + choice);
             alert('선택 ' + choice + '을(를) 선택했습니다!');
+        }
+
+        function goToChoiceScreen() {
+            document.getElementById('choiceScreen').style.display = 'flex';
+        }
+
+        function goBackToHome() {
+            document.getElementById('choiceScreen').style.display = 'none';
         }
     </script>
 </body>
