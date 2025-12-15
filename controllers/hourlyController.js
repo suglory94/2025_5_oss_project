@@ -7,6 +7,42 @@ const Branch = require("../models/branchModel");
 const { OpenAI } = require('openai');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// 요일 인덱스
+const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+const WEEKDAYS_MAP = {
+    monday: 0,
+    tuesday: 1,
+    wednesday: 2,
+    thursday: 3,
+    friday: 4
+};
+
+// 교시별 시간 정보
+const PERIOD_TIMES = {
+    1: { start: "09:00", end: "10:15" },
+    2: { start: "10:30", end: "11:45" },
+    3: { start: "12:00", end: "13:15" },
+    4: { start: "13:30", end: "14:45" },
+    5: { start: "15:00", end: "16:15" },
+    6: { start: "16:30", end: "17:45" }
+};
+
+// 문자열을 분으로 변환
+const timeToMinutes = (timeStr) => {
+    const [h, m] = timeStr.split(":").map(Number);
+    return h * 60 + m;
+}
+
+// 현재 시간을 기준으로 교시 번호를 찾음
+const getCurrentPeriod = (currentMinutes) => {
+    for (const [period, times] of Object.entries(PERIOD_TIMES)) {
+        if (currentMinutes >= timeToMinutes(times.start) && currentMinutes < timeToMinutes(times.end)) {
+            return Number(period);
+        }
+    }
+    return null;
+};
+
 // 시간표 + 초기 재정 저장
 const saveInitialSettings = asyncHandler(async (req, res) => {
     const { schedule, initialBudget } = req.body;
@@ -51,9 +87,82 @@ const getSettings = asyncHandler(async (req, res) => {
     });
 });
 
+// 가장 가까운 수업 찾기
+const findNextClassDetails = (scheduleDoc) => {
+    const now = new Date();
+    const currentDayJsIndex = now.getDay();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    let currentDayDbIndex = -1;
+    if (currentDayJsIndex >= 1 && currentDayJsIndex <= 5) {
+        currentDayDbIndex = currentDayJsIndex - 1;
+    }
+
+    if (currentDayDbIndex === -1) {
+        return null;
+    }
+
+    let minTimeDiffMs = Infinity;
+    let nextClassDetails = null;
+
+    for (let d = 0; d < 5; d++) {
+        const checkDayDbIndex = d;
+        const checkDayName = DAYS[checkDayDbIndex];
+
+        const isToday = (checkDayDbIndex === currentDayDbIndex);
+        const startMinuteCheck = isToday ? currentMinutes : timeToMinutes("08:59");
+
+        const classesOnDay = scheduleDoc[checkDayName] || [];
+
+        for (let period = 1; period <= 6; period++) {
+            const periodTimes = PERIOD_TIMES[period];
+            const startMinutes = timeToMinutes(periodTimes.start);
+
+            const currentClass = classesOnDay.find(cls => {
+                const classStartMinutes = timeToMinutes(cls.start);
+                return classStartMinutes === startMinutes;
+            });
+
+            if (!currentClass) continue;
+
+            // 수업 날짜 계산
+            let classDate = new Date(now);
+
+            let daysToAdd = checkDayDbIndex - currentDayDbIndex;
+            if (daysToAdd < 0) daysToAdd += 5;
+
+            classDate.setDate(now.getDate() + daysToAdd);
+            classDate.setHours(Math.floor(startMinutes / 60), startMinutes % 60, 0, 0);
+
+            const timeDiffMs = classDate.getTime() - now.getTime();
+
+            if (timeDiffMs > 0 && timeDiffMs < minTimeDiffMs) {
+                minTimeDiffMs = timeDiffMs;
+                nextClassDetails = {
+                    day: checkDayDbIndex,
+                    hour: Math.floor(startMinutes / 60),
+                    minute: startMinutes % 60,
+                    subject: currentClass.subject,
+                    period: period
+                };
+            }
+        }
+    }
+
+    return nextClassDetails;
+}
+
 // 시간별 선택 질문 생성
 const getHourlyQuestion = asyncHandler(async (req, res) => {
-    const { day, hour } = req.body;
+    const now = new Date();
+    const currentDayJsIndex = now.getDay();
+
+    if (currentDayJsIndex === 0 || currentDayJsIndex === 6) {
+
+    }
+
+    const currentDay = (currentDayJsIndex >= 1 && currentDayJsIndex <= 5) ? currentDayJsIndex - 1 : -1;
+    const currentHour = now.getHours();
 
     const userSettings = await UserSettings.findOne();
     const scheduleDoc = await Schedule.findOne();
@@ -62,57 +171,54 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "초기 설정을 먼저 완료하세요" });
     }
 
-    // 선택된 시간인지 확인
-    const existingChoice = await HourlyChoice.findOne({ day, hour });
-    if (existingChoice) {
-        return res.status(200).json({
-            message: "이미 선택한 시간입니다",
-            existingChoice
-        });
-    }
+    // 가장 가까운 수업 찾기
+    const closestClass = findNextClassDetails(scheduleDoc);
 
-    const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-    const dayName = days[day];
-    const classesOnDay = scheduleDoc[dayName] || [];
+    if (closestClass) {
+        const { day, hour, minute, subject } = closestClass;
 
-    // 현재 시간 HH : MM
-    const currentTime = `${String(hour).padStart(2, '0')}:00`;
-
-    // 1. 수업 시간인 경우
-    let currentClass = null;
-    for (let cls of classesOnDay) {
-        const startHour = parseInt(cls.start.split(':')[0]);
-        const endHour = parseInt(cls.end.split(':')[0]);
-
-        if (hour >= startHour && hour < endHour) {
-            currentClass = cls;
-            break;
+        const existingChoice = await HourlyChoice.findOne({ day, hour });
+        if (existingChoice) {
+            return res.status(200).json({
+                message: `가장 가까운 수업(${subject}, ${DAYS[day]} ${hour}시)은 이미 선택을 완료했습니다. 다음 이벤트를 선택하세요.`,
+                existingChoice
+            });
         }
-    }
 
-    if (currentClass) {
         return res.status(200).json({
             day,
             hour,
             choiceType: "class",
-            question: `${currentClass.subject} 수업이 있습니다. 어떻게 하시겠습니까?`,
+            question: `${subject} 수업이 곧 시작됩니다 (${hour}:${String(minute).padStart(2, '0')}). 어떻게 하시겠습니까?`,
             options: [
                 { value: "attend", label: "수업 듣기", hasCost: false },
-                { value: "attend_coffee", label: "수업 듣고 커피 사기", hasCost: true, costPrompt: "커피 값은 얼마였나요?" },
+                { value: "attend_coffee", label: "수업 듣고 커피 사기", hasCost: true, costPrompt: "커피 값은 얼마였나요" },
                 { value: "skip_sleep", label: "결석하고 자기", hasCost: false },
-                { value: "skip_play", label: "결석하고 놀기", hasCost: true, costPrompt: "얼마를 소비했나요?" }
+                { value: "skip_play", label: "결석하고 놀기", hasCost: true, costPrompt: "얼마를 소비했나요:" }
             ],
-            subject: currentClass.subject
+            subject: subject
         });
     }
 
+    // 가까운 수업이 없는 경우 : 현재 시간을 기준으로 식사 / 수면 / 자유 시간 로직
+    // 선택된 시간인지 확인
+    if (currentDay !== -1) {
+        const existingChoice = await HourlyChoice.findOne({ day: currentDay, hour: currentHour });
+        if (existingChoice) {
+            return res.status(200).json({
+                message: "이미 선택한 시간입니다",
+                existingChoice
+            });
+        }
+    }
+
     // 2. 식사 시간인 경우 (12시, 18시)
-    if (hour === 12 || hour === 18) {
+    if (currentHour === 12 || currentHour === 18) {
         return res.status(200).json({
-            day,
-            hour,
+            day: currentDay,
+            hour: currentHour,
             choiceType: "meal",
-            question: `${hour === 12 ? '점심' : '저녁'} 시간입니다. 어떻게 드시겠습니까?`,
+            question: `${currentHour === 12 ? '점심' : '저녁'} 시간입니다. 어떻게 드시겠습니까?`,
             options: [
                 { value: "restaurant", label: "식당에서 먹기", hasCost: true, costPrompt: "식사 비용은 얼마였나요?" },
                 { value: "cafeteria", label: "학식 먹기", hasCost: true, costPrompt: "학식 비용은 얼마였나요?" },
@@ -124,10 +230,10 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
     }
 
     // 3. 수면시간
-    if (hour >= 23 || hour < 8) {
+    if (currentHour >= 23 || currentHour < 8) {
         return res.status(200).json({
-            day,
-            hour,
+            day: currentDay,
+            hour: currentHour,
             choiceType: "sleep",
             question: "수면 시간입니다.",
             options: [
@@ -146,7 +252,6 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
         question: "자유 시간입니다. 무엇을 하시겠습니까?",
         options: [
             { value: "study", label: "공부하기", hasCost: false },
-            { value: "exercise", label: "운동하기", hasCost: false },
             { value: "hobby", label: "취미활동", hasCost: true, costPrompt: "얼마 썼나요?" },
             { value: "rest", label: "휴식", hasCost: false },
             { value: "part_time", label: "알바하기", hasCost: true, costPrompt: "얼마 벌었나요? (양수로 입력)" },
@@ -448,27 +553,13 @@ const getDailyChoices = asyncHandler(async (req, res) => {
 
 // 학습 시간, 수면, 재정 상태 조회
 const getRawStats = asyncHandler(async (req, res) => {
-    const settings = await UserSettings.findOne();
-    const choices = await HourlyChoice.find().sort({ dat: 1, hour: 1 });
-    const scheduleDoc = await Schedule.findOne();
+    const rawStats = await getRawStatsInternal();
 
-    if (!settings || !scheduleDoc) {
+    if (!rawStats) {
         return res.status(404).json({ message: "초기 설정 데이터가 없습니다" });
     }
-    const currentSleepMinutes = settings.totalSleepMinutes;
-    const currentFinance = settings.currentBudget;
-    const classChoices = choices.filter(c => c.choiceType === "class");
-    const attendedClasses = classChoices.filter(
-        c => c.choice === "attend" || c.choice === "attend_coffee").length;
-    const totalClassHours = classChoices.length;
-    const attendanceRate = totalClassHours > 0 ? Math.round((attendClasses / totalClassHours) * 100) : 100;
 
-    res.status(200).json({
-        grade: attendanceRate,
-        sleep: currentSleepMinutes,
-        finance: currentFinance,
-        weakestState: weakestState
-    })
+    res.status(200).json(rawStats);
 });
 
 // 선택 수정
@@ -493,7 +584,8 @@ const updateChoice = asyncHandler(async (req, res) => {
     hourlyChoice.description = generateDescription(
         hourlyChoice.choiceType,
         choice,
-        hourlyChoice.subject
+        hourlyChoice.subject,
+        cost
     );
 
     await hourlyChoice.save();
