@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div class="container">
+    <div class="container" id="homeScreen">
         <!-- 배경 애니메이션 효과 -->
         <div class="background-effects">
             <div class="effect-circle effect-1"></div>
@@ -36,7 +36,7 @@
                     시작
                 </button>
 
-                <button class="btn btn-outline" onclick="showTimetable()">
+                <button class="btn btn-outline" onclick="showTimetableScreen()">
                     <svg class="icon-time" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path
                             d="M8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7" />
@@ -50,25 +50,931 @@
         </div>
     </div>
 
+    <div class="full-screen-container choice-screen" id="choiceScreen">
+        <div class="aurora-background">
+            <div class="aurora-effect aurora-1"></div>
+            <div class="aurora-effect aurora-2"></div>
+            <div class="aurora-effect aurora-3"></div>
+        </div>
+
+        <div class="choice-content">
+            <h2 id="choice-question" class="question-box">질문을 불러오는 중...</h2>
+            <p id="choice-context"></p>
+            <form id="activity-choice-form"
+                style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div id="choice-options-container" class="choices-wrapper">
+                    <button class="choice-item"><span>선택지 A</span></button>
+                    <button class="choice-item"><span>선택지 B</span></button>
+                </div>
+
+                <div style="width: 100%; max-width: 460px; margin-top: 30px;">
+                    <div id="cost-input-area" class="input-area" style="display: none; margin-bottom: 20px;">
+                        <label for="cost-value" id="cost-prompt-label"
+                            style="display: block; margin-bottom: 5px; font-weight: 600;">비용을 입력하세요:</label>
+                        <input type="number" id="cost-value" value="0" min="-10000000" max="10000000"
+                            style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #8b5cf6; background: rgba(0, 0, 0, 0.4); color: #f0f0f5;">
+                    </div>
+
+                    <div id="description-input-area" class="input-area" style="display: none; margin-bottom: 20px;">
+                        <label for="custom-description"
+                            style="display: block; margin-bottom: 5px; font-weight: 600;">자세한 활동 설명:</label>
+                        <input type="text" id="custom-description" placeholder="예: 친구와 떡볶이 먹기"
+                            style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #8b5cf6; background: rgba(0, 0, 0, 0.4); color: #f0f0f5;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="save-choice-btn"
+                    style="width: 100%; max-width: 460px; margin-top: 10px;">선택 저장</button>
+            </form>
+        </div>
+
+        <button class="back-btn" onclick="goBackToHome()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            돌아가기
+        </button>
+    </div>
+
+    <div class="full-screen-container timetable-screen" id="timetableScreen">
+        <div class="timetable-container">
+            <h2 class="timetable-title">시간표 및 예산 설정</h2>
+
+            <!-- 🌟 초기화 버튼 추가 -->
+            <button type="button" class="btn btn-outline" onclick="resetAllData()"
+                style="width: 100%; margin-bottom: 20px; background: rgba(220, 38, 38, 0.2); border-color: rgba(220, 38, 38, 0.6); color: #fca5a5;">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                </svg>
+                ⚠️ 모든 데이터 초기화
+            </button>
+
+            <form id="schedule-form-full" style="width: 100%;">
+                <div
+                    style="margin-bottom: 30px; padding: 20px; border: 1px solid rgba(139, 92, 246, 0.5); border-radius: 10px; background: rgba(0, 0, 0, 0.2);">
+                    <label for="initial-budget-full" style="display: block; margin-bottom: 10px; font-weight: 600;">초기
+                        주간 예산 (원):</label>
+                    <input type="number" id="initial-budget-full" value="10000" min="0" required
+                        style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #8b5cf6; background: rgba(0, 0, 0, 0.4); color: #f0f0f5;">
+                </div>
+
+                <div class="timetable-wrapper">
+                    <table class="timetable">
+                        <thead>
+                            <tr>
+                                <th class="period-header">교시</th>
+                                <th class="day-header">월</th>
+                                <th class="day-header">화</th>
+                                <th class="day-header">수</th>
+                                <th class="day-header">목</th>
+                                <th class="day-header">금</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timetableBody">
+                        </tbody>
+                    </table>
+                    <div class="timetable-hint">
+                        클릭해서 시간표를 입력해주세요. (설정 및 시간표 저장 버튼 클릭 시 최종 전송)
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; margin-top: 40px; height: 60px; font-size: 1.2rem;">설정 및 시간표 저장</button>
+            </form>
+        </div>
+
+        <button class="timetable-back" onclick="goBackToHome()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            돌아가기
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="timetableModal" onclick="closeTimetableModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="modalTitle" style="color: #8b5cf6; margin-bottom: 15px;">시간 입력</h3>
+            <input type="text" id="timetableInput" class="timetable-input" placeholder="과목명을 입력하세요">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel-btn btn btn-outline" onclick="closeTimetableModal()">취소</button>
+                <button class="modal-btn confirm-btn btn btn-primary" onclick="saveTimetableCell()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 히스토리 화면 (수정됨) -->
+    <div class="full-screen-container history-screen" id="historyScreen" style="display: none;">
+        <div class="history-container">
+            <!-- 상단 헤더 영역 (제목 + 돌아가기 버튼) -->
+            <div class="history-header-row">
+                <h2 class="history-title">🕰️ 평행 우주 히스토리</h2>
+
+                <button class="btn btn-outline back-btn-inline" onclick="goBackToHome()">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                    돌아가기
+                </button>
+            </div>
+
+            <!-- 리스트 영역 -->
+            <div id="historyList" class="history-list">
+                <p style="text-align: center; color: #aaa;">기록을 불러오는 중...</p>
+            </div>
+        </div>
+
+        <!-- 기존의 하단 고정 버튼은 삭제됨 -->
+    </div>
+
     <script>
-        const WEEKDAYS = ["월", "화", "수", "목", "금"];
+        let selectedChoice = null;
+        let parallelChoiceData = null; // 평행 우주 데이터 저장
+        let currentQuestionData = null;
+        let timetableData = []; // 시간표 데이터를 저장할 배열
+        let currentCellKey = '';
+
+        let allFinalOptions = [];
+
+        const DAYS_KR = ["월", "화", "수", "목", "금"];
+        const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
         const PERIODS = [1, 2, 3, 4, 5, 6];
 
-        let timetableData = [];
+        const TEMP_PERIOD_TIMES = {
+            1: { start: "09:00", end: "10:15" },
+            2: { start: "10:30", end: "11:45" },
+            3: { start: "12:00", end: "13:15" },
+            4: { start: "13:30", end: "14:45" },
+            5: { start: "15:00", end: "16:15" },
+            6: { start: "16:30", end: "17:45" }
+        };
 
-        function startSimulation() {
-            console.log('시뮬레이션 시작');
-            alert('시뮬레이션을 시작합니다!');
+        // 메인 화면으로 돌아가기
+        function goBackToHome() {
+            document.getElementById('choiceScreen').style.display = 'none';
+            document.getElementById('timetableScreen').style.display = 'none';
+            document.getElementById('homeScreen').style.display = 'flex'; // 메인 화면이 flex로 가정
         }
 
-        function showHistory() {
-            console.log('히스토리 보기');
-            alert('히스토리 페이지로 이동합니다!');
+        // 히스토리 버튼
+        // 히스토리 버튼 함수 (기존 코드 유지 또는 확인용)
+        async function showHistory() {
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('historyScreen').style.display = 'flex';
+            document.getElementById('historyList').innerHTML = '<p style="text-align: center; color: #8b5cf6;">기록을 불러오는 중...</p>';
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/hourly/history`);
+                const data = await response.json();
+
+                if (response.status === 200) {
+                    const actual = data.actual_universe || [];
+                    const parallel = data.parallel_universe || [];
+
+                    const historyMap = new Map();
+
+                    actual.forEach(choice => {
+                        const key = `${choice.day}-${choice.hour}`;
+                        historyMap.set(key, { actual: choice, parallels: [] });
+                    });
+
+                    parallel.forEach(branch => {
+                        const key = `${branch.day}-${branch.hour}`;
+                        if (historyMap.has(key)) {
+                            historyMap.get(key).parallels.push(branch);
+                        }
+                    });
+
+                    const mergedData = Array.from(historyMap.values()).sort((a, b) => {
+                        if (a.actual.day !== b.actual.day) {
+                            return a.actual.day - b.actual.day;
+                        }
+                        return a.actual.hour - b.actual.hour;
+                    });
+
+                    // 여기서 mergedData를 넘겨줌 -> renderHistoryList 함수가 이를 매개변수로 받아서 사용
+                    renderHistoryList(mergedData);
+                } else {
+                    document.getElementById('historyList').innerHTML = `<p style="color: red; text-align: center;">오류: ${data.message}</p>`;
+                }
+            } catch (error) {
+                console.error('히스토리 오류:', error);
+                document.getElementById('historyList').innerHTML = `<p style="color: red; text-align: center;">통신 오류</p>`;
+            }
         }
 
-        function showTimetable() {
-            console.log('시간표 입력');
-            alert('시간표 입력 페이지로 이동합니다!');
+
+        // 시간표 버튼
+        async function showTimetableScreen() {
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('timetableScreen').style.display = 'flex';
+            // 저장된 시간표 불러오기
+            await loadSavedTimetable();
+
+            // 표 렌더링
+            initTimetableBody();
+        }
+
+        // 시간표 표 내부 렌더링
+        function initTimetableBody() {
+            const tbody = document.getElementById('timetableBody');
+            tbody.innerHTML = '';
+
+            for (let period of PERIODS) {
+                const row = document.createElement('tr');
+                const periodCell = document.createElement('td');
+                periodCell.className = 'period-cell';
+                periodCell.textContent = period + '교시';
+                row.appendChild(periodCell);
+
+                for (let dayIndex = 0; dayIndex < DAYS_KR.length; dayIndex++) {
+                    const cell = document.createElement('td');
+                    cell.className = 'timetable-cell';
+                    // key: '0-1' (월요일 1교시)
+                    const cellKey = dayIndex + '-' + period;
+                    const cellData = timetableData.find(d => d.key === cellKey);
+                    cell.textContent = cellData ? cellData.value : '';
+                    cell.onclick = () => openTimetableModal(cellKey, period, DAYS_KR[dayIndex]);
+                    row.appendChild(cell);
+                }
+                tbody.appendChild(row);
+            }
+        }
+
+        // 시간표 셀 클릭 시 모달 열기
+        function openTimetableModal(cellKey, period, day) {
+            currentCellKey = cellKey;
+            const cellData = timetableData.find(d => d.key === cellKey);
+            document.getElementById('modalTitle').textContent = day + '요일 ' + period + '교시';
+            document.getElementById('timetableInput').value = cellData ? cellData.value : '';
+            document.getElementById('timetableModal').style.display = 'flex';
+            document.getElementById('timetableInput').focus();
+        }
+
+        // 시간표 모달 닫기
+        function closeTimetableModal() {
+            document.getElementById('timetableModal').style.display = 'none';
+            document.getElementById('timetableInput').value = '';
+            currentCellKey = '';
+        }
+
+        // 시간표 셀 데이터 저장 (모달 내부)
+        function saveTimetableCell() {
+            const value = document.getElementById('timetableInput').value.trim();
+
+            if (value === '') {
+                // 값이 없으면 기존 데이터 삭제
+                timetableData = timetableData.filter(d => d.key !== currentCellKey);
+            } else {
+                const existingIndex = timetableData.findIndex(d => d.key === currentCellKey);
+                if (existingIndex >= 0) {
+                    timetableData[existingIndex].value = value;
+                } else {
+                    timetableData.push({ key: currentCellKey, value: value });
+                }
+            }
+
+            closeTimetableModal();
+            initTimetableBody(); // 표 업데이트
+        }
+
+        // 시간표 및 예산 설정 폼 제출 핸들러 (백엔드 전송)
+        document.getElementById('schedule-form-full').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const initialBudget = parseInt(document.getElementById('initial-budget-full').value, 10);
+
+            if (isNaN(initialBudget) || initialBudget < 0) {
+                alert("유효한 초기 주간 예산을 입력해주세요.");
+                return;
+            }
+
+            const schedule = {};
+            // timetable_array는 수업이 있는 시간(1)과 없는 시간(0)을 나타내는 5x6 배열
+            const timetable_array = Array(DAYS.length).fill(null).map(() => Array(PERIODS.length).fill(0));
+
+            // 🌟 모든 요일을 빈 배열로 초기화 (기존 데이터 덮어쓰기)
+            DAYS.forEach(dayName => {
+                schedule[dayName] = [];
+            });
+
+            // timetableData 배열을 기반으로 백엔드용 데이터 생성
+            timetableData.forEach(item => {
+                const [dayIndex, period] = item.key.split('-').map(Number);
+                const dayName = DAYS[dayIndex];
+                const subject = item.value;
+                const periodNum = period;
+
+                if (subject) {
+                    const timeDetail = TEMP_PERIOD_TIMES[periodNum];
+
+                    const newClass = {
+                        subject: subject,
+                        start: timeDetail.start,
+                        end: timeDetail.end
+                    };
+
+                    if (!schedule[dayName]) {
+                        schedule[dayName] = [];
+                    }
+                    schedule[dayName].push(newClass);
+
+                    const periodIndex = periodNum - 1;
+                    if (dayIndex !== -1 && periodIndex !== -1) {
+                        timetable_array[dayIndex][periodIndex] = 1;
+                    }
+                }
+            });
+
+            // 백엔드 API 호출
+            try {
+                const response = await fetch(`http://localhost:3000/api/hourly/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        schedule,
+                        initialBudget,
+                        timetable_array
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.status === 201) {
+                    alert(`설정이 성공적으로 저장되었습니다!\n초기 예산: ${data.settings.initialBudget.toLocaleString()}원`);
+                    goBackToHome(); // 저장 후 메인으로 복귀
+                }
+                else {
+                    alert(`설정 저장 오류: ${data.message || '알 수 없는 오류'}`);
+                }
+            } catch (error) {
+                console.error('시간표 저장 오류: ', error);
+                alert(`서버와 통신 오류가 발생했습니다.`);
+            }
+        });
+
+
+        // --- 선택 화면 관련 함수 ---
+
+        // 시작 버튼 핸들러: AI 질문 불러오기
+        async function startSimulation() {
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('choiceScreen').style.display = 'flex';
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/hourly/question`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (response.status === 200) {
+                    currentQuestionData = data;
+                    renderChoiceScreen(data);
+                }
+                else {
+                    alert(`시뮬레이션 시작 오류: ${data.message || '알 수 없는 오류'}`);
+                    goBackToHome();
+                }
+            }
+            catch (error) {
+                console.error('질문 불러오기 중 오류: ', error);
+                alert(`서버와 통신 오류가 발생했습니다.`);
+                goBackToHome();
+            }
+        }
+
+        // 선택 화면 렌더링
+        // index.html 수정
+
+        function renderChoiceScreen(data) {
+            // 1. data 유효성 검사 강화
+            if (!data) {
+                alert("데이터를 불러오지 못했습니다.");
+                goBackToHome();
+                return;
+            }
+
+            // 2. 메시지만 있고 선택지(options)가 없는 경우 처리 (예: 이미 선택 완료 등)
+            if (!data.options || !Array.isArray(data.options) || data.options.length === 0) {
+                document.getElementById('choice-question').textContent = data.message || "표시할 내용이 없습니다.";
+                document.getElementById('choice-context').textContent = "";
+                document.getElementById('choice-options-container').innerHTML = ''; // 버튼 비우기
+
+                // 입력 폼 숨기기
+                document.getElementById('cost-input-area').style.display = 'none';
+                document.getElementById('description-input-area').style.display = 'none';
+                document.getElementById('save-choice-btn').style.display = 'none';
+
+                // 메인으로 돌아가는 버튼이 있으므로 여기서는 종료
+                return;
+            }
+
+            // 정상적인 질문 표시
+            document.getElementById('choice-question').textContent = data.question;
+
+            // 컨텍스트 업데이트
+            const dayNameKr = data.day !== undefined && data.day >= 0 && data.day < 5 ? DAYS_KR[data.day] : '오늘';
+            document.getElementById('choice-context').textContent = `유형: ${data.choiceType} (${data.subject || dayNameKr} ${data.hour}시)`;
+
+            const optionsContainer = document.getElementById('choice-options-container');
+            optionsContainer.innerHTML = '';
+
+            // options가 확실히 배열일 때만 실행됨
+            data.options.forEach(option => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'choice-item';
+                button.innerHTML = `<span>${option.label}</span>`;
+
+                button.dataset.value = option.value;
+                button.dataset.hasCost = option.hasCost;
+                button.dataset.costPrompt = option.costPrompt || '';
+                button.dataset.needsDescription = option.needsDescription || false;
+
+                // AI 선택지일 경우 카테고리 정보 등을 담아둠 (평행우주 저장용)
+                button.dataset.optionData = JSON.stringify({
+                    value: option.value,
+                    label: option.label,
+                    category: option.category || ''
+                });
+
+                button.addEventListener('click', handleOptionSelect);
+                optionsContainer.appendChild(button);
+            });
+
+            // 초기화
+            selectedChoice = null;
+            parallelChoiceData = null; // 평행우주 데이터 초기화
+            document.getElementById('cost-input-area').style.display = 'none';
+            document.getElementById('description-input-area').style.display = 'none';
+            document.getElementById('cost-value').value = 0;
+            document.getElementById('custom-description').value = '';
+            document.getElementById('save-choice-btn').style.display = 'block'; // 버튼 다시 보이기
+        }
+
+        // 선택지 버튼 클릭 핸들러 (수정됨)
+        function handleOptionSelect(event) {
+            const btn = event.currentTarget;
+            const buttons = document.querySelectorAll('#choice-options-container .choice-item');
+
+            // 선택 하이라이트
+            buttons.forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            selectedChoice = btn.dataset.value;
+
+            // =========================================================
+            // [수정 1] 1단계 질문 처리: 조건문을 단순화하여 확실하게 분기 태움
+            // =========================================================
+            if (btn.dataset.value === 'attend_base' || btn.dataset.value === 'skip_base') {
+                const subject = currentQuestionData.subject || "수업"; // subject가 없을 경우 대비
+
+                // 1단계 선택 시, 바로 2단계 질문을 가져오고 함수 종료
+                fetchBranchQuestion(currentQuestionData.day, currentQuestionData.hour, subject, btn.dataset.value);
+
+                // 저장 버튼 숨기기 (아직 저장할 단계가 아님)
+                document.getElementById('save-choice-btn').style.display = 'none';
+
+                return; // 여기서 함수 종료 (아래 로직 실행 안 함)
+            }
+
+            // =========================================================
+            // 2. 2단계 질문 또는 일반 질문 처리: 평행 우주 데이터 준비
+            // =========================================================
+
+            // 선택되지 않은 버튼들을 찾습니다.
+            const unselectedButtons = Array.from(buttons).filter(b => !b.classList.contains('selected'));
+
+            // 평행 우주 배열 초기화
+            window.currentParallelChoices = [];
+
+            // 선택되지 않은 옵션들을 순회하며 평행 우주 데이터를 준비합니다.
+            unselectedButtons.forEach(otherBtn => {
+                let data = {};
+
+                try {
+                    data = JSON.parse(otherBtn.dataset.optionData || '{}');
+                } catch (e) {
+                    console.error("Option Data 파싱 오류:", e);
+                }
+
+                window.currentParallelChoices.push({
+                    value: data.value || otherBtn.dataset.value,
+                    label: data.label || otherBtn.innerText,
+                    category: data.category || '',
+                    cost: 0, // 평행우주 비용은 0 또는 서버 기본값에 맡김
+                    description: `(평행우주) '${data.label || otherBtn.innerText}' 선택`
+                });
+            });
+
+            // =========================================================
+            // 3. 비용 및 설명 입력 영역 표시/숨김
+            // =========================================================
+            let selectedOptionData = {};
+            try {
+                selectedOptionData = JSON.parse(btn.dataset.optionData || '{}');
+            } catch (e) { }
+
+            const hasCost = btn.dataset.hasCost === 'true';
+            const needsDescription = btn.dataset.needsDescription === 'true';
+
+            const costArea = document.getElementById('cost-input-area');
+            const descArea = document.getElementById('description-input-area');
+            const saveBtn = document.getElementById('save-choice-btn');
+
+            if (hasCost) {
+                costArea.style.display = 'block';
+                document.getElementById('cost-prompt-label').textContent = btn.dataset.costPrompt || '비용은 얼마였나요?';
+            } else {
+                costArea.style.display = 'none';
+                document.getElementById('cost-value').value = 0;
+            }
+
+            if (needsDescription) {
+                descArea.style.display = 'block';
+            } else {
+                descArea.style.display = 'none';
+                document.getElementById('custom-description').value = '';
+            }
+
+            saveBtn.style.display = 'block';
+        }
+
+        // 2단계 질문
+        async function fetchBranchQuestion(day, hour, subject, baseChoice) {
+            const response = await fetch(`http://localhost:3000/api/hourly/branch-question`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ day, hour, subject, baseChoice })
+            });
+
+            if (response.ok) {
+                const branchData = await response.json();
+
+                updateQuestionUI(branchData);
+
+            } else {
+                alert("2단계 질문을 가져오는 데 실패했습니다.");
+            }
+        }
+
+        // 2단계 UI 업데이트 함수 (수정됨)
+        function updateQuestionUI(data) {
+            currentQuestionData = data;
+
+            // 질문 텍스트 업데이트
+            document.getElementById('choice-question').textContent = data.question;
+
+            // 컨텍스트 업데이트
+            const dayNameKr = data.day !== undefined && data.day >= 0 && data.day < 5 ? DAYS_KR[data.day] : '오늘';
+            document.getElementById('choice-context').textContent = `유형: ${data.choiceType} (${data.subject || dayNameKr} ${data.hour}시)`;
+
+            const optionsContainer = document.getElementById('choice-options-container');
+            optionsContainer.innerHTML = '';
+
+            data.options.forEach(option => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'choice-item';
+                button.innerHTML = `<span>${option.label}</span>`;
+
+                // 데이터셋 바인딩
+                button.dataset.value = option.value;
+                button.dataset.hasCost = option.hasCost;
+                button.dataset.costPrompt = option.costPrompt || '';
+                button.dataset.needsDescription = option.needsDescription || false;
+
+                // [수정 2] 오타 수정: JSON.stringfy -> JSON.stringify
+                button.dataset.optionData = JSON.stringify({
+                    value: option.value,
+                    label: option.label,
+                    category: option.category || ''
+                });
+
+                button.addEventListener('click', handleOptionSelect);
+                optionsContainer.appendChild(button);
+            });
+
+            // 초기화: 2단계 질문에서는 폼을 숨기지 않습니다. (1단계에서 폼 로직을 스킵했으므로)
+            selectedChoice = null;
+            // 2단계 질문 로드 직후에는 아무것도 선택 안 된 상태이므로 폼 숨김
+            document.getElementById('cost-input-area').style.display = 'none';
+            document.getElementById('description-input-area').style.display = 'none';
+            document.getElementById('save-choice-btn').style.display = 'none';
+        }
+
+        // 선택 저장 폼 제출 핸들러 (평행 우주 데이터 전송)
+        document.getElementById('activity-choice-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!selectedChoice) {
+                alert('선택지를 선택해주세요!');
+                return;
+            }
+
+            const cost = parseInt(document.getElementById('cost-value').value, 10);
+            const selectedOptionElement = document.querySelector(`#choice-options-container .choice-item[data-value="${selectedChoice}"]`);
+
+            let customDescription = '';
+            if (selectedOptionElement && selectedOptionElement.dataset.needsDescription === 'true') {
+                customDescription = document.getElementById('custom-description').value.trim();
+                if (!customDescription) {
+                    alert("활동 설명을 입력해주세요.");
+                    return;
+                }
+            }
+
+            if (selectedOptionElement && selectedOptionElement.dataset.hasCost === 'true' && isNaN(cost)) {
+                alert("유효한 비용을 입력해주세요.");
+                return;
+            }
+
+            const parallelChoicesPayload = allFinalOptions
+                .filter(option => option.value !== selectedChoice) // 선택된 것 제외
+                .map(option => {
+                    // 각 평행 우주의 비용을 추정하거나 기본값(0)을 설정합니다.
+                    // 서버에서 hasCost=true로 반환했다면, 클라이언트에서 임의의 비용을 추정할 수 있습니다.
+                    // 여기서는 일단 0 또는 'attend_coffee', 'skip_play'에 대한 기본값을 사용합니다.
+                    let oppositeCost = 0;
+                    if (option.value === 'attend_coffee') oppositeCost = -4000; // 예시
+                    if (option.value === 'skip_play') oppositeCost = -10000; // 예시
+
+                    return {
+                        value: option.value,
+                        cost: oppositeCost, // 서버가 자동 생성하는 경우 0으로 보냅니다.
+                        label: option.label,
+                        // description 필드는 서버에서 자동으로 생성하므로 생략 가능
+                    };
+                });
+
+            // 백엔드로 보낼 데이터 준비 (평행 우주 데이터 포함)
+            const payload = {
+                day: currentQuestionData.day,
+                hour: currentQuestionData.hour,
+                choiceType: currentQuestionData.choiceType,
+                subject: currentQuestionData.subject,
+
+                choice: selectedChoice,
+                cost: cost,
+                duration: 60, // 임시: 1시간 활동
+                customDescription: document.getElementById('custom-description').value.trim() || undefined,
+                // 평행 우주 데이터
+                parallelChoices: window.currentParallelChoices || [],
+            };
+
+            // 백엔드 API 호출
+            try {
+                const response = await fetch(`http://localhost:3000/api/hourly/choices`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.status === 201) {
+                    alert(`활동 저장 완료!\n[나의 우주] ${data.actual_universe.description}\n[평행 우주] ${data.parallel_universe.description}\n현재 예산: ${data.actual_universe.currentBudget.toLocaleString()}원`);
+                    goBackToHome(); // 저장 후 메인으로 복귀
+                } else {
+                    alert(`활동 저장 오류: ${data.message || '알 수 없는 오류'}`);
+                }
+            } catch (error) {
+                console.error('활동 저장 오류:', error);
+                alert('서버 통신 오류가 발생했습니다.');
+            }
+        });
+
+        // 엔터 키 입력 시 시간표 모달 저장
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.getElementById('timetableInput');
+            if (input) {
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // 폼 제출 방지
+                        saveTimetableCell();
+                    }
+                });
+            }
+            // 초기 홈 화면 표시
+            document.getElementById('homeScreen').style.display = 'flex';
+
+            // 🌟 페이지 로드 시 저장된 시간표 미리 불러오기
+            loadSavedTimetable();
+        });
+
+        function goBackToHome() {
+            document.getElementById('choiceScreen').style.display = 'none';
+            document.getElementById('timetableScreen').style.display = 'none';
+            document.getElementById('historyScreen').style.display = 'none'; // 추가
+            document.getElementById('homeScreen').style.display = 'flex'; // 메인 화면이 flex로 가정
+        }
+
+        async function loadSavedTimetable() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/hourly/settings`);
+
+                if (response.status === 200) {
+                    const data = await response.json();
+                    const schedule = data.schedule;
+
+                    // 시간표 데이터 복원
+                    timetableData = [];
+
+                    DAYS.forEach((dayName, dayIndex) => {
+                        const classesOnDay = schedule[dayName] || [];
+
+                        classesOnDay.forEach(classInfo => {
+                            // 시작 시간으로 교시 찾기
+                            for (let period = 1; period <= 6; period++) {
+                                const periodTime = TEMP_PERIOD_TIMES[period];
+                                if (classInfo.start === periodTime.start) {
+                                    const cellKey = `${dayIndex}-${period}`;
+                                    timetableData.push({
+                                        key: cellKey,
+                                        value: classInfo.subject
+                                    });
+                                    break;
+                                }
+                            }
+                        });
+                    });
+
+                    // 초기 예산도 복원
+                    document.getElementById('initial-budget-full').value = data.settings.initialBudget;
+
+                    // 시간표 화면이 열려있으면 표 업데이트
+                    if (document.getElementById('timetableScreen').style.display === 'flex') {
+                        initTimetableBody();
+                    }
+                }
+            } catch (error) {
+                console.error('시간표 불러오기 오류:', error);
+            }
+        }
+
+        async function resetAllData() {
+            const confirmed = confirm("⚠️ 경고!\n\n모든 선택 히스토리와 통계가 삭제됩니다.\n정말 초기화하시겠습니까?");
+
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/hourly/reset`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.status === 200) {
+                    alert("✅ 모든 데이터가 초기화되었습니다!");
+
+                    // 로컬 시간표도 초기화
+                    timetableData = [];
+                    initTimetableBody();
+                } else {
+                    alert(`초기화 오류: ${data.message}`);
+                }
+            } catch (error) {
+                console.error('초기화 오류:', error);
+                alert('서버 통신 오류가 발생했습니다.');
+            }
+        }
+
+        // 히스토리 버튼 (수정된 부분)
+        async function showHistory() {
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('historyScreen').style.display = 'flex';
+            document.getElementById('historyList').innerHTML = '<p style="text-align: center; color: #8b5cf6;">기록을 불러오는 중...</p>';
+
+            try {
+                // 서버에서 히스토리 데이터 가져오기 (예상 API 엔드포인트)
+                const response = await fetch(`http://localhost:3000/api/hourly/history`);
+                const data = await response.json();
+
+                if (response.status === 200) {
+                    const actual = data.actual_universe || [];
+                    const parallel = data.parallel_universe || [];
+
+                    const historyMap = new Map();
+
+                    // 1. 실제 우주 데이터 추가
+                    actual.forEach(choice => {
+                        const key = `${choice.day}-${choice.hour}`;
+                        historyMap.set(key, { actual: choice, parallels: [] });
+                    });
+
+                    // 2. 평행 우주 데이터 연결
+                    parallel.forEach(branch => {
+                        const key = `${branch.day}-${branch.hour}`;
+                        if (historyMap.has(key)) {
+                            historyMap.get(key).parallels.push(branch);
+                        }
+                    });
+
+                    // 3. 시간 순서대로 정렬 (Day 0-11, Hour 0-23)
+                    const mergedData = Array.from(historyMap.values()).sort((a, b) => {
+                        if (a.actual.day !== b.actual.day) {
+                            return a.actual.day - b.actual.day;
+                        }
+                        return a.actual.hour - b.actual.hour;
+                    });
+
+                    renderHistoryList(mergedData);
+                } else {
+                    document.getElementById('historyList').innerHTML = `<p style="color: red; text-align: center;">히스토리 불러오기 오류: ${data.message || '알 수 없는 오류'}</p>`;
+                }
+            } catch (error) {
+                console.error('히스토리 불러오기 중 오류: ', error);
+                document.getElementById('historyList').innerHTML = `<p style="color: red; text-align: center;">서버와 통신 오류가 발생했습니다.</p>`;
+            }
+        }
+
+        // 부호에 따라 색상 지정
+        function formatChange(value, unit, isFinance) {
+            if (value === null || value === undefined) return `0${unit}`;
+            if (isFinance) value = -value;
+            if (value > 0) {
+                return `<span style="color: #6ee7b7;">+${value.toLocaleString()}${unit}</span>`; // Tailwind green-300
+            } else if (value < 0) {
+                return `<span style="color: #fca5a5;">${value.toLocaleString()}${unit}</span>`; // Tailwind red-300
+            } else {
+                return `0${unit}`;
+            }
+        }
+
+        // 히스토리 리스트 렌더링 함수
+        function renderHistoryList(historyData) { // 매개변수로 데이터를 받음
+            const listContainer = document.getElementById('historyList');
+            listContainer.innerHTML = '';
+
+            // [수정] mergedData -> historyData로 변경
+            if (!historyData || historyData.length === 0) {
+                listContainer.innerHTML = '<p style="text-align: center; color: #aaa;">아직 기록된 활동이 없습니다.</p>';
+                return;
+            }
+
+            // [수정] mergedData -> historyData로 변경
+            historyData.forEach((entry) => {
+                const a = entry.actual;
+                const dayNameKr = DAYS_KR[a.day] || `Day ${a.day + 1}`;
+
+                console.log('실제 우주 데이터:', a);
+                // 실제 선택 정보
+                let actualHtml = `
+            <div class="universe-container actual-universe">
+                <div class="universe-title">✨ 나의 우주 선택 (${dayNameKr} ${a.hour}시)</div>
+                <p class="universe-description">${a.description}</p>
+                <div class="universe-stats">
+                    <span>💰 재정: ${formatChange(a.financeChange || 0, '원', true)}</span>
+                    <span>📚 학습: ${formatChange(a.studyChangeMinutes || 0, '분', false)}</span>
+                    <span>😴 수면: ${formatChange(a.sleepChangeMinutes || 0, '분', false)}</span>
+                </div>
+            </div>
+        `;
+
+                // 평행 우주 정보
+                let parallelHtml = '';
+                if (entry.parallels.length === 0) {
+                    parallelHtml = `
+                <div class="universe-container parallel-universe no-parallel">
+                    <div class="universe-title">🌌 평행 우주</div>
+                    <p class="universe-description">기록된 평행 우주 데이터가 없습니다.</p>
+                </div>
+            `;
+                } else {
+                    entry.parallels.forEach((p, index) => {
+                        console.log('평행 우주 데이터:', p);
+                        parallelHtml += `
+                    <div class="universe-container parallel-universe ${index > 0 ? 'mt-2' : ''}">
+                        <div class="universe-title">🌌 평행 우주 (선택하지 않은 길)</div>
+                        <p class="universe-description">${p.oppositeDescription}</p>
+                        <div class="universe-stats">
+                            <span>💰 재정: ${formatChange(p.oppositeFinanceChange || 0, '원', true)}</span>
+                            <span>📚 학습: ${formatChange(p.oppositeStudyChangeMinutes || 0, '분', false)}</span>
+                            <span>😴 수면: ${formatChange(p.oppositeSleepChangeMinutes || 0, '분', false)}</span>
+                        </div>
+                    </div>
+                `;
+                    });
+                }
+
+                const itemHtml = `
+            <div class="history-item">
+                <div class="history-header">
+                    <span class="history-time">${dayNameKr} ${a.hour}시</span>
+                    <span class="history-type">${a.choiceType || '일반 활동'}</span>
+                </div>
+                ${actualHtml}
+                ${parallelHtml}
+            </div>
+        `;
+                listContainer.insertAdjacentHTML('beforeend', itemHtml);
+            });
         }
     </script>
 </body>

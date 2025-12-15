@@ -1,8 +1,9 @@
 import { client } from "../ai/openaiClient.js";
-import Stats from "../logic/state.js";
 
 export async function choice({ period, hasClass, weakestState }) {
-    const stats = await Stats();
+    const stats = await getRawStatsFromApi();
+
+    const calculatedWeakestState = getWeakestState(stats);
 
     const prompt =
         `너는 대학생의 선택 갈림길을 설계하는 AI다.
@@ -25,7 +26,7 @@ export async function choice({ period, hasClass, weakestState }) {
 2. 수업이 있는 경우:
    - 선택지는 반드시 "수업에 간다", "수업에 가지 않는다" 여야 한다.
 3. 수업이 없는 경우:
-   - 가장 부족한 상태는 "${weakestState}"이다.
+   - 가장 부족한 상태는 "${calculatedWeakestState}"이다.
    - 선택지 A는 해당 상태를 "직접 회복"하는 행동이어야 한다.
    - 선택지 B는 그 회복을 "미루거나 회피"하는 행동이어야 한다.
    - 단, 선택지 B도 다른 카테고리에 부분적인 이득이 있는 합리적인 선택이어야 한다.

@@ -5,13 +5,16 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const path = require('path');
 
 app.use(express.json());
 
 dbConnect();
 
+app.use(express.static(path.join(__dirname)));
+
 app.get("/", (req, res) => {
-    res.send('Hello, Node!');
+    res.send(path.join(__dirname, 'index.html'));
 });
 
 app.use("/api/hourly", require("./routes/hourlyRoutes"));

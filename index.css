@@ -20,21 +20,23 @@ body {
     overflow: hidden;
 }
 
-/* 배경 애니메이션 효과 */
+/* =========================
+   배경 애니메이션
+========================= */
 .background-effects {
-    position: absolute;     /* 부모 기준으로 위치 잡기*/
-    inset: 0; 
-    overflow: hidden;       /* 배경에서 빠져나오는 요소는 안보이게 처리*/
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
 }
 
-.effect-circle { /* 배경 가운데에 흰 원*/
+.effect-circle {
     position: absolute;
     border-radius: 50%;
     filter: blur(80px);
     animation: pulse 3s ease-in-out infinite;
 }
 
-.effect-1 { /* */
+.effect-1 {
     top: 25%;
     left: 25%;
     width: 384px;
@@ -52,17 +54,22 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 0.5;
         transform: scale(1);
     }
+
     50% {
         opacity: 0.8;
         transform: scale(1.1);
     }
 }
 
-/* 메인 콘텐츠 */
+/* =========================
+   메인 콘텐츠
+========================= */
 .content {
     position: relative;
     z-index: 10;
@@ -84,24 +91,27 @@ body {
 }
 
 @keyframes gradient {
-    0%, 100% {
+
+    0%,
+    100% {
         background-position: left center;
     }
+
     50% {
         background-position: right center;
     }
 }
 
-/* 버튼 그룹 */
+/* =========================
+   버튼 그룹
+========================= */
 .button-group {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    justify-content: center;
     align-items: center;
-    justify-content: center; /* 가로 가운데 */
-    align-items: center;     /* 세로 가운데 (필요할 때) */
-    gap: 40px;               /* 버튼 사이 간격 */
-    margin-top: 40px;        /* 필요하면 상단 여백 */
+    gap: 40px;
+    margin-top: 40px;
 }
 
 .btn {
@@ -127,7 +137,7 @@ body {
 .icon-time {
     width: 23px;
     height: 30px;
-    transform: translateY(5px);/*아래로 내리기*/
+    transform: translateY(5px);
 }
 
 .btn-outline {
@@ -152,12 +162,261 @@ body {
     box-shadow: 0 15px 30px rgba(139, 92, 246, 0.6);
 }
 
-/* 반응형 디자인 */
+/* =========================
+   선택 화면 (메인용)
+========================= */
+.choice-container {
+    margin-top: 60px;
+    text-align: center;
+    z-index: 11;
+}
+
+.choice-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f0f0f5;
+    margin-bottom: 30px;
+    text-shadow: 0 0 15px rgba(139, 92, 246, 0.6);
+}
+
+.choice-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.choice-container .choice-btn {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 3px solid rgba(139, 92, 246, 0.6);
+    background: linear-gradient(135deg,
+            rgba(139, 92, 246, 0.25),
+            rgba(59, 130, 246, 0.25));
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.35);
+}
+
+.choice-container .choice-btn:hover {
+    transform: scale(1.12);
+    border-color: rgba(139, 92, 246, 1);
+    box-shadow: 0 0 45px rgba(139, 92, 246, 0.6);
+}
+
+/* =========================
+   선택 화면 (풀스크린)
+========================= */
+.choice-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+
+    justify-content: center;
+    align-items: center;
+}
+
+.aurora-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 25%, #16213e 50%, #0f3460 75%, #0a0a1a 100%);
+    overflow: hidden;
+}
+
+.aurora-effect {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    mix-blend-mode: screen;
+    opacity: 0.4;
+}
+
+.aurora-1 {
+    top: 10%;
+    left: 20%;
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.6), rgba(59, 130, 246, 0.3));
+    animation: auroraFloat 8s ease-in-out infinite;
+}
+
+.aurora-2 {
+    top: 20%;
+    right: 15%;
+    width: 600px;
+    height: 600px;
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.4), rgba(139, 92, 246, 0.3));
+    animation: auroraFloat 10s ease-in-out infinite reverse;
+    animation-delay: 2s;
+}
+
+.aurora-3 {
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 700px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(34, 211, 238, 0.2));
+    animation: auroraFloat 12s ease-in-out infinite;
+    animation-delay: 4s;
+}
+
+@keyframes auroraFloat {
+
+    0%,
+    100% {
+        transform: translateY(0) translateX(0);
+    }
+
+    50% {
+        transform: translateY(-50px) translateX(30px);
+    }
+}
+
+.choice-content {
+    position: relative;
+    z-index: 10;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-20px);
+
+    gap: 80px;
+    padding: 40px;
+}
+
+.question-box {
+    background: linear-gradient(135deg,
+            rgba(139, 92, 246, 0.3) 0%,
+            rgba(59, 130, 246, 0.3) 50%,
+            rgba(34, 211, 238, 0.3) 100%);
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    border-radius: 30px;
+    padding: 30px 80px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+    animation: questionGlow 3s ease-in-out infinite;
+}
+
+.question-box p {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #f0f0f5;
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+    letter-spacing: 2px;
+}
+
+@keyframes questionGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 8px 40px rgba(139, 92, 246, 0.4);
+    }
+}
+
+.choices-wrapper {
+    display: flex;
+    gap: 60px;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.choice-item {
+    width: 200px;
+    height: 200px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    color: #f0f0f5;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.choice-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg,
+            rgba(139, 92, 246, 0.2) 0%,
+            rgba(59, 130, 246, 0.2) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 1;
+}
+
+.choice-item span {
+    position: relative;
+    z-index: 2;
+}
+
+.choice-item:hover {
+    border-color: rgba(139, 92, 246, 1);
+    transform: scale(1.08) translateY(-10px);
+    box-shadow: 0 15px 50px rgba(139, 92, 246, 0.5);
+}
+
+.choice-item:hover::before {
+    opacity: 1;
+}
+
+.back-btn {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    background: transparent;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    color: #f0f0f5;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    z-index: 20;
+}
+
+.back-btn:hover {
+    border-color: #8b5cf6;
+    background-color: rgba(139, 92, 246, 0.1);
+    transform: translateX(-5px);
+}
+
+/* =========================
+   반응형
+========================= */
 @media (min-width: 640px) {
     .button-group {
         flex-direction: row;
     }
-    
+
     .title {
         font-size: 5rem;
     }
@@ -167,4 +426,520 @@ body {
     .title {
         font-size: 6rem;
     }
-} 
+}
+
+@media (max-width: 600px) {
+    .choice-buttons {
+        gap: 24px;
+    }
+
+    .choice-container .choice-btn {
+        width: 90px;
+        height: 90px;
+    }
+
+    .choice-content {
+        gap: 60px;
+    }
+
+    .question-box {
+        padding: 25px 50px;
+    }
+
+    .question-box p {
+        font-size: 2rem;
+    }
+
+    .choices-wrapper {
+        gap: 40px;
+    }
+
+    .choice-item {
+        width: 160px;
+        height: 160px;
+        font-size: 1.2rem;
+    }
+
+    .back-btn {
+        bottom: 20px;
+        left: 20px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .choice-content {
+        gap: 50px;
+        padding: 20px;
+    }
+
+    .question-box {
+        padding: 20px 40px;
+    }
+
+    .question-box p {
+        font-size: 1.5rem;
+    }
+
+    .choices-wrapper {
+        gap: 30px;
+        flex-direction: column;
+    }
+
+    .choice-item {
+        width: 140px;
+        height: 140px;
+        font-size: 1.1rem;
+    }
+}
+
+/* =========================
+   시간표 입력 화면
+========================= */
+.timetable-screen {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    background-color: #0a0a1a;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+}
+
+.timetable-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.timetable-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #f0f0f5;
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+    margin-bottom: 20px;
+}
+
+.timetable-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.timetable {
+    width: 100%;
+    border-collapse: collapse;
+    color: #f0f0f5;
+}
+
+.timetable thead {
+    background: linear-gradient(90deg,
+            rgba(139, 92, 246, 0.3) 0%,
+            rgba(59, 130, 246, 0.3) 100%);
+}
+
+.timetable th {
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    color: #f0f0f5;
+}
+
+.period-header {
+    width: 80px;
+    background: rgba(139, 92, 246, 0.4);
+}
+
+.day-header {
+    width: 100px;
+}
+
+.period-cell {
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    background: rgba(139, 92, 246, 0.2);
+    width: 80px;
+}
+
+.timetable-cell {
+    padding: 15px;
+    text-align: center;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.timetable-back {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    z-index: 200;
+
+    background: transparent;
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    color: #f0f0f5;
+
+    padding: 12px 24px;
+    border-radius: 8px;
+
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    transition: all 0.3s ease;
+}
+
+.timetable-back:hover {
+    border-color: #8b5cf6;
+    background-color: rgba(139, 92, 246, 0.15);
+    transform: translateX(-6px);
+}
+
+/* 시간표 안내 문구 */
+.timetable-wrapper {
+    position: relative;
+    /* 기준점 */
+}
+
+.timetable-hint {
+    position: absolute;
+    bottom: -18px;
+    right: 14px;
+
+    font-size: 0.85rem;
+    color: rgba(240, 240, 245, 0.6);
+
+    pointer-events: none;
+    /* 클릭 방해 안 하게 */
+    user-select: none;
+
+    letter-spacing: 0.3px;
+}
+
+/* =========================
+   시간표 입력 모달
+========================= */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg,
+            rgba(139, 92, 246, 0.2) 0%,
+            rgba(59, 130, 246, 0.2) 100%);
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    border-radius: 15px;
+    padding: 30px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.timetable-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #f0f0f5;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+/* =====================================
+   히스토리 화면 (History Screen) 개선
+   ===================================== */
+.history-screen {
+    display: none;
+    /* JS로 flex로 변경 */
+    flex-direction: column;
+    padding: 20px;
+    background-color: #1a1a2e;
+    /* 어두운 배경 */
+    color: #f0f0f5;
+    overflow-y: auto;
+}
+
+.history-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+.history-title {
+    color: #8b5cf6;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.2rem;
+    /* 약간 키움 */
+    font-weight: 700;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+    /* 간격 증가 */
+}
+
+.history-item {
+    background: rgba(40, 40, 60, 0.7);
+    padding: 25px;
+    /* 패딩 증가 */
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    /* 그림자 강조 */
+    transition: transform 0.3s ease;
+}
+
+.history-item:hover {
+    transform: translateY(-5px);
+    /* 호버 효과 추가 */
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* 세로 정렬 */
+    margin-bottom: 18px;
+    /* 간격 증가 */
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    /* 점선 대신 실선으로 변경 */
+}
+
+.history-time {
+    font-size: 1.1em;
+    /* 글자 크기 증가 */
+    font-weight: 700;
+    color: #3b82f6;
+    /* 시간 색상을 파란색 계열로 변경 */
+    letter-spacing: 0.5px;
+}
+
+.history-type {
+    font-style: normal;
+    /* 이탤릭 제거 */
+    color: #aaa;
+    font-size: 0.9em;
+    padding: 4px 8px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+}
+
+.universe-container {
+    margin-top: 15px;
+    padding: 15px 20px;
+    /* 패딩 증가 */
+    border-radius: 8px;
+}
+
+.actual-universe {
+    background: rgba(139, 92, 246, 0.15);
+    /* 보라색 계열 */
+    border-left: 4px solid #8b5cf6;
+}
+
+.parallel-universe {
+    background: rgba(252, 163, 17, 0.1);
+    /* 주황색 계열 (투명도 감소) */
+    border-left: 4px solid #fca311;
+}
+
+/* 평행 우주가 없을 때 스타일 (JS에서 클래스 추가 시 사용) */
+.parallel-universe.no-parallel {
+    background: rgba(170, 170, 170, 0.05);
+    border-left: 4px solid #aaa;
+}
+
+.universe-title {
+    font-weight: 700;
+    /* 굵기 증가 */
+    margin-bottom: 8px;
+    color: #fff;
+    font-size: 1em;
+}
+
+.universe-description {
+    margin-bottom: 12px;
+    /* 간격 증가 */
+    font-size: 1em;
+    /* 글자 크기 약간 증가 */
+    color: #e0e0e0;
+}
+
+.universe-stats {
+    display: flex;
+    flex-wrap: wrap;
+    /* 반응성을 위해 줄바꿈 허용 */
+    gap: 10px 20px;
+    /* 간격 조정 */
+}
+
+.universe-stats span {
+    display: inline-block;
+    font-size: 0.9em;
+    /* 글자 크기 약간 증가 */
+    padding: 5px 10px;
+    border-radius: 6px;
+    /* 모서리 둥글게 */
+    background: rgba(255, 255, 255, 0.1);
+    /* 배경색 증가 */
+    font-weight: 500;
+}
+
+/* 재정, 학습, 수면 변화량에 대한 색상 강조 (JS에서 인라인으로 적용됨) */
+/* .universe-stats span > span[style*="color: #6ee7b7"] {} // + 값
+/* .universe-stats span > span[style*="color: #fca5a5"] {} // - 값 */
+
+/* 반응형 조정 */
+/* =========================
+   히스토리 화면 상단 레이아웃 수정
+========================= */
+
+/* 제목과 버튼을 가로로 배치하는 컨테이너 */
+.history-header-row {
+    display: flex;
+    justify-content: space-between;
+    /* 양 끝 정렬 */
+    align-items: center;
+    /* 수직 중앙 정렬 */
+    width: 100%;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(139, 92, 246, 0.3);
+    /* 구분선 추가 */
+}
+
+/* 기존 제목 스타일 덮어쓰기 */
+.history-title {
+    margin-bottom: 0 !important;
+    /* 기존 마진 제거 */
+    text-align: left !important;
+    /* 왼쪽 정렬 */
+    font-size: 2rem;
+    /* 크기 조정 */
+}
+
+/* 상단에 위치한 돌아가기 버튼 스타일 */
+.back-btn-inline {
+    width: auto !important;
+    /* 고정 너비 해제 */
+    height: 44px !important;
+    font-size: 1rem !important;
+    padding: 0 20px !important;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    /* 줄바꿈 방지 */
+}
+
+.back-btn-inline:hover {
+    background-color: rgba(139, 92, 246, 0.2);
+    border-color: #8b5cf6;
+}
+
+/* 모바일 화면 대응 */
+.history-screen {
+    /* 기존 display: none 등은 유지 */
+    display: none;
+    flex-direction: column;
+    padding: 20px;
+    background-color: #1a1a2e;
+    color: #f0f0f5;
+
+    /* 👇 [핵심] 이 부분들이 있어야 스크롤이 됩니다 👇 */
+    position: fixed;
+    /* 화면에 고정 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* 높이를 화면 전체로 지정 */
+    overflow-y: auto;
+    /* 내용이 넘치면 세로 스크롤 허용 */
+    -webkit-overflow-scrolling: touch;
+    /* 모바일에서 부드러운 스크롤 */
+    z-index: 50;
+}
+
+.history-screen::-webkit-scrollbar {
+    width: 8px;
+}
+
+.history-screen::-webkit-scrollbar-track {
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 10px;
+}
+
+.history-screen::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.5);
+    border-radius: 10px;
+}
+
+.history-screen::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.7);
+}
+
+/* Firefox */
+.history-screen {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.5) rgba(139, 92, 246, 0.1);
+}
+
+@media (max-width: 600px) {
+    .history-header-row {
+        flex-direction: column;
+        /* 세로로 배치 */
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .back-btn-inline {
+        width: 100% !important;
+        /* 모바일에서는 버튼 꽉 차게 */
+        justify-content: center;
+    }
+}
