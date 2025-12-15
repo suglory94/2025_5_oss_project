@@ -482,3 +482,187 @@ body {
         font-size: 1.1rem;
     }
 }
+
+/* =========================
+   시간표 입력 화면
+========================= */
+.timetable-screen {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    background-color: #0a0a1a;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+}
+
+.timetable-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.timetable-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #f0f0f5;
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+    margin-bottom: 20px;
+}
+
+.timetable-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.timetable {
+    width: 100%;
+    border-collapse: collapse;
+    color: #f0f0f5;
+}
+
+.timetable thead {
+    background: linear-gradient(90deg, 
+        rgba(139, 92, 246, 0.3) 0%,
+        rgba(59, 130, 246, 0.3) 100%);
+}
+
+.timetable th {
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    color: #f0f0f5;
+}
+
+.period-header {
+    width: 80px;
+    background: rgba(139, 92, 246, 0.4);
+}
+
+.day-header {
+    width: 100px;
+}
+
+.period-cell {
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    background: rgba(139, 92, 246, 0.2);
+    width: 80px;
+}
+
+.timetable-cell {
+    padding: 15px;
+    text-align: center;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.timetable-back {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    z-index: 200;
+
+    background: transparent;
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    color: #f0f0f5;
+
+    padding: 12px 24px;
+    border-radius: 8px;
+
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    transition: all 0.3s ease;
+}
+
+.timetable-back:hover {
+    border-color: #8b5cf6;
+    background-color: rgba(139, 92, 246, 0.15);
+    transform: translateX(-6px);
+}
+
+/* 시간표 안내 문구 */
+.timetable-wrapper {
+    position: relative; /* 기준점 */
+}
+
+.timetable-hint {
+    position: absolute;
+    bottom: -18px;
+    right: 14px;
+
+    font-size: 0.85rem;
+    color: rgba(240, 240, 245, 0.6);
+
+    pointer-events: none; /* 클릭 방해 안 하게 */
+    user-select: none;
+
+    letter-spacing: 0.3px;
+}
+
+/* =========================
+   시간표 입력 모달
+========================= */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg,
+        rgba(139, 92, 246, 0.2) 0%,
+        rgba(59, 130, 246, 0.2) 100%);
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    border-radius: 15px;
+    padding: 30px;
+    width: 90%;
+    max-width: 400px;
+}
+
+.timetable-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: #f0f0f5;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
