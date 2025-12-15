@@ -27,7 +27,7 @@
                     히스토리
                 </button>
                 
-                <button class="btn btn-primary" onclick="startSimulation()">
+                <button class="btn btn-primary" onclick="goToChoiceScreen()">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                     </svg>
@@ -46,10 +46,44 @@
         </div>
     </div>
 
+    <!-- 선택 화면 -->
+    <div class="choice-screen" id="choiceScreen">
+        <div class="aurora-background">
+            <div class="aurora-effect aurora-1"></div>
+            <div class="aurora-effect aurora-2"></div>
+            <div class="aurora-effect aurora-3"></div>
+        </div>
+
+        <div class="choice-content">
+            <div class="question-box">
+                <p>질문</p>
+            </div>
+
+            <div class="choices-wrapper">
+                <button class="choice-item" onclick="selectChoice(1)">
+                    <span>선택1</span>
+                </button>
+                <button class="choice-item" onclick="selectChoice(2)">
+                    <span>선택2</span>
+                </button>
+            </div>
+        </div>
+
+        <button class="back-btn" onclick="goBackToHome()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            돌아가기
+        </button>
+    </div>
+
     <script>
-        function startSimulation() {
-            console.log('시뮬레이션 시작');
-            alert('시뮬레이션을 시작합니다!');
+        function goToChoiceScreen() {
+            document.getElementById('choiceScreen').style.display = 'flex';
+        }
+
+        function goBackToHome() {
+            document.getElementById('choiceScreen').style.display = 'none';
         }
 
         function showHistory() {
@@ -57,9 +91,14 @@
             alert('히스토리 페이지로 이동합니다!');
         }
 
-         function showTimetable() {
+        function showTimetable() {
             console.log('시간표 입력');
             alert('시간표 입력 페이지로 이동합니다!');
+        }
+
+        function selectChoice(choice) {
+            console.log('선택: ' + choice);
+            alert('선택 ' + choice + '을(를) 선택했습니다!');
         }
     </script>
 </body>

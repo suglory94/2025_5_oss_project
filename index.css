@@ -20,21 +20,23 @@ body {
     overflow: hidden;
 }
 
-/* 배경 애니메이션 효과 */
+/* =========================
+   배경 애니메이션
+========================= */
 .background-effects {
-    position: absolute;     /* 부모 기준으로 위치 잡기*/
-    inset: 0; 
-    overflow: hidden;       /* 배경에서 빠져나오는 요소는 안보이게 처리*/
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
 }
 
-.effect-circle { /* 배경 가운데에 흰 원*/
+.effect-circle {
     position: absolute;
     border-radius: 50%;
     filter: blur(80px);
     animation: pulse 3s ease-in-out infinite;
 }
 
-.effect-1 { /* */
+.effect-1 {
     top: 25%;
     left: 25%;
     width: 384px;
@@ -62,7 +64,9 @@ body {
     }
 }
 
-/* 메인 콘텐츠 */
+/* =========================
+   메인 콘텐츠
+========================= */
 .content {
     position: relative;
     z-index: 10;
@@ -92,16 +96,15 @@ body {
     }
 }
 
-/* 버튼 그룹 */
+/* =========================
+   버튼 그룹
+========================= */
 .button-group {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
     align-items: center;
-    justify-content: center; /* 가로 가운데 */
-    align-items: center;     /* 세로 가운데 (필요할 때) */
-    gap: 40px;               /* 버튼 사이 간격 */
-    margin-top: 40px;        /* 필요하면 상단 여백 */
+    gap: 40px;
+    margin-top: 40px;
 }
 
 .btn {
@@ -127,7 +130,7 @@ body {
 .icon-time {
     width: 23px;
     height: 30px;
-    transform: translateY(5px);/*아래로 내리기*/
+    transform: translateY(5px);
 }
 
 .btn-outline {
@@ -152,12 +155,257 @@ body {
     box-shadow: 0 15px 30px rgba(139, 92, 246, 0.6);
 }
 
-/* 반응형 디자인 */
+/* =========================
+   선택 화면 (메인용)
+========================= */
+.choice-container {
+    margin-top: 60px;
+    text-align: center;
+    z-index: 11;
+}
+
+.choice-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f0f0f5;
+    margin-bottom: 30px;
+    text-shadow: 0 0 15px rgba(139, 92, 246, 0.6);
+}
+
+.choice-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.choice-container .choice-btn {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 3px solid rgba(139, 92, 246, 0.6);
+    background: linear-gradient(135deg,
+        rgba(139, 92, 246, 0.25),
+        rgba(59, 130, 246, 0.25)
+    );
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.35);
+}
+
+.choice-container .choice-btn:hover {
+    transform: scale(1.12);
+    border-color: rgba(139, 92, 246, 1);
+    box-shadow: 0 0 45px rgba(139, 92, 246, 0.6);
+}
+
+/* =========================
+   선택 화면 (풀스크린)
+========================= */
+.choice-screen {
+   display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.aurora-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 25%, #16213e 50%, #0f3460 75%, #0a0a1a 100%);
+    overflow: hidden;
+}
+
+.aurora-effect {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    mix-blend-mode: screen;
+    opacity: 0.4;
+}
+
+.aurora-1 {
+    top: 10%;
+    left: 20%;
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.6), rgba(59, 130, 246, 0.3));
+    animation: auroraFloat 8s ease-in-out infinite;
+}
+
+.aurora-2 {
+    top: 20%;
+    right: 15%;
+    width: 600px;
+    height: 600px;
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.4), rgba(139, 92, 246, 0.3));
+    animation: auroraFloat 10s ease-in-out infinite reverse;
+    animation-delay: 2s;
+}
+
+.aurora-3 {
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 700px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(34, 211, 238, 0.2));
+    animation: auroraFloat 12s ease-in-out infinite;
+    animation-delay: 4s;
+}
+
+@keyframes auroraFloat {
+    0%, 100% {
+        transform: translateY(0) translateX(0);
+    }
+    50% {
+        transform: translateY(-50px) translateX(30px);
+    }
+}
+
+.choice-content {
+    position: relative;
+    z-index: 10;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-20px);
+
+    gap: 80px;
+    padding: 40px;
+}
+
+.question-box {
+    background: linear-gradient(135deg, 
+        rgba(139, 92, 246, 0.3) 0%,
+        rgba(59, 130, 246, 0.3) 50%,
+        rgba(34, 211, 238, 0.3) 100%);
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    border-radius: 30px;
+    padding: 30px 80px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+    animation: questionGlow 3s ease-in-out infinite;
+}
+
+.question-box p {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #f0f0f5;
+    text-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+    letter-spacing: 2px;
+}
+
+@keyframes questionGlow {
+    0%, 100% {
+        box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+    }
+    50% {
+        box-shadow: 0 8px 40px rgba(139, 92, 246, 0.4);
+    }
+}
+
+.choices-wrapper {
+    display: flex;
+    gap: 60px;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.choice-item {
+    width: 200px;
+    height: 200px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    color: #f0f0f5;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.choice-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(139, 92, 246, 0.2) 0%,
+        rgba(59, 130, 246, 0.2) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 1;
+}
+
+.choice-item span {
+    position: relative;
+    z-index: 2;
+}
+
+.choice-item:hover {
+    border-color: rgba(139, 92, 246, 1);
+    transform: scale(1.08) translateY(-10px);
+    box-shadow: 0 15px 50px rgba(139, 92, 246, 0.5);
+}
+
+.choice-item:hover::before {
+    opacity: 1;
+}
+
+.back-btn {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    background: transparent;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    color: #f0f0f5;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    z-index: 20;
+}
+
+.back-btn:hover {
+    border-color: #8b5cf6;
+    background-color: rgba(139, 92, 246, 0.1);
+    transform: translateX(-5px);
+}
+
+/* =========================
+   반응형
+========================= */
 @media (min-width: 640px) {
     .button-group {
         flex-direction: row;
     }
-    
+
     .title {
         font-size: 5rem;
     }
@@ -167,4 +415,70 @@ body {
     .title {
         font-size: 6rem;
     }
-} 
+}
+
+@media (max-width: 600px) {
+    .choice-buttons {
+        gap: 24px;
+    }
+
+    .choice-container .choice-btn {
+        width: 90px;
+        height: 90px;
+    }
+
+    .choice-content {
+        gap: 60px;
+    }
+
+    .question-box {
+        padding: 25px 50px;
+    }
+
+    .question-box p {
+        font-size: 2rem;
+    }
+
+    .choices-wrapper {
+        gap: 40px;
+    }
+
+    .choice-item {
+        width: 160px;
+        height: 160px;
+        font-size: 1.2rem;
+    }
+
+    .back-btn {
+        bottom: 20px;
+        left: 20px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .choice-content {
+        gap: 50px;
+        padding: 20px;
+    }
+
+    .question-box {
+        padding: 20px 40px;
+    }
+
+    .question-box p {
+        font-size: 1.5rem;
+    }
+
+    .choices-wrapper {
+        gap: 30px;
+        flex-direction: column;
+    }
+
+    .choice-item {
+        width: 140px;
+        height: 140px;
+        font-size: 1.1rem;
+    }
+}
