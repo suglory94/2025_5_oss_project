@@ -1,8 +1,11 @@
 import { client } from "../ai/openaiClient.js";
+import Stats from "../logic/state.js";
 
-export async function choice({ period, hasClass, weakestState, stats }) {
-  const prompt = 
-  `너는 대학생의 선택 갈림길을 설계하는 AI다.
+export async function choice({ period, hasClass, weakestState }) {
+    const stats = await Stats();
+
+    const prompt =
+        `너는 대학생의 선택 갈림길을 설계하는 AI다.
 
 [상황]
 - 다음 교시: ${period}교시
@@ -39,18 +42,18 @@ export async function choice({ period, hasClass, weakestState, stats }) {
 }`;
 
 
-  const response = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }]
-  });
+    const response = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }]
+    });
 
-  try {
-    return JSON.parse(response.choices[0].message.content);
-  } catch (e) {
-    console.error("AI branch JSON 파싱 실패", e);
-    return {
-      message: "지금은 선택지를 생성할 수 없어요.",
-      choices: []
-    };
-  }
+    try {
+        return JSON.parse(response.choices[0].message.content);
+    } catch (e) {
+        console.error("AI branch JSON 파싱 실패", e);
+        return {
+            message: "지금은 선택지를 생성할 수 없어요.",
+            choices: []
+        };
+    }
 }
