@@ -75,13 +75,13 @@ const getRawStatsInternal = async () => {
     }
     sleepScore = Math.min(100, Math.max(10, sleepScore));
 
-    // 🌟 순공 시간 기반 학습 점수 계산 (사용자 요청 반영)
+    // 순공 시간 기반 학습 점수 계산
     const totalStudyMinutes = settings.totalStudyMinutes;
     const averageStudyHours = (totalStudyMinutes / 60) / daysPassed; // 일 평균 순공 시간 (시간 단위)
-    const targetAverageStudyHours = 5; // 목표 일 평균 순공 시간 (예시: 5시간)
+    const targetAverageStudyHours = 5; // 목표 일 평균 순공 시간
     const maxScore = 100;
     const minScore = 10;
-    const baseScore = 50; // 기본 점수 (0시간일 때 시작 점수)
+    const baseScore = 50; // 기본 점수
 
     let studyScore;
 
@@ -110,7 +110,10 @@ const checkClassStatusFromArray = (timetableArray, dayIndex, period) => {
     // 인덱스 유효성 검사 (월~금, 1~6교시)
     if (dayIndex >= 0 && dayIndex <= 4 && periodIndex >= 0 && periodIndex <= 5) {
         // timetableArray[요일 인덱스][교시 인덱스] == 1 (수업 있음)
-        return timetableArray[dayIndex] && timetableArray[dayIndex][periodIndex] === 1;
+        const daySchedule = timetableArray[dayIndex];
+        if (Array.isArray(daySchedule)) {
+            return daySchedule[periodIndex] === 1;
+        }
     }
     return false;
 };
@@ -301,7 +304,6 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
                 choiceType: "class",
                 question: `현재 ${currentPeriod}교시 ${subject} 수업 중입니다.`,
                 options: [
-                    // ... (수업 관련 옵션) ...
                     { value: "attend", label: "수업 듣기", hasCost: false },
                     { value: "attend_coffee", label: "수업 듣고 커피 사기", hasCost: true, costPrompt: "커피 값은 얼마였나요" },
                     { value: "skip_sleep", label: "결석하고 자기", hasCost: false },
@@ -347,11 +349,9 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
     // 4. 자유 시간
     const { choice } = require('../ai/choice');
     if (currentDay !== -1 && currentHour >= 8 && currentHour < 23) {
-        // 가장 부족한 상태를 찾음 (choice.js가 필요로 함)
         const rawStats = await getRawStatsInternal();
         const calculatedWeakestState = getWeakestState(rawStats);
 
-        // choice.js의 AI에게 2가지 선택지를 요청
         const aiChoices = await choice({
             period: currentPeriod || '자유',
             hasClass: isCurrentTimeClass,
@@ -360,17 +360,16 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
         });
 
         if (aiChoices.choices && aiChoices.choices.length === 2) {
-            // choice.js가 생성한 AI 선택지를 반환
             return res.status(200).json({
                 day: currentDay,
                 hour: currentHour,
-                choiceType: "ai_branch", // 새로운 타입으로 설정
-                question: aiChoices.message, // AI가 만든 상황 설명
+                choiceType: "ai_branch",
+                question: aiChoices.message,
                 options: aiChoices.choices.map((c, index) => ({
-                    value: `choice_${index === 0 ? 'A' : 'B'}`, // 선택지를 구별할 수 있는 value
+                    value: `choice_${index === 0 ? 'A' : 'B'}`,
                     label: c.label,
-                    category: c.category, // AI 조언을 위해 카테고리 추가 (study|sleep|finance)
-                    hasCost: true, // 임의로 비용을 받는다고 가정 (프론트에서 처리)
+                    category: c.category,
+                    hasCost: true,
                     costPrompt: "활동 비용/수입은 얼마였나요?",
                     needsDescription: false
                 }))
@@ -378,7 +377,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
         }
     }
 
-    // 5. 모든 조건에 해당하지 않는 경우 (예: 주말, 새벽 7시 등)
+    // 5. 모든 조건에 해당하지 않는 경우
     return res.status(200).json({
         day: currentDay, // 주말이면 -1
         hour: currentHour,
@@ -498,15 +497,13 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
     // 3. 평행우주 생성
     const savedBranches = [];
     if (parallelChoices && Array.isArray(parallelChoices)) {
-        // 받은 배열(parallelChoices)의 각 항목을 순회하며 Branch를 생성합니다.
         for (const oppositeData of parallelChoices) {
-            // Branch 모델에 저장할 데이터 구성
             const oppositeChoiceValue = oppositeData.value || "none";
             const oppositeCostValue = oppositeData.cost !== undefined ? oppositeData.cost : 0;
             const oppositeDuration = oppositeData.duration || 60;
             const category = oppositeData.category;
 
-            // 상태 변화 계산 (category가 있으면 우선 사용)
+            // 상태 변화 계산
             let oppositeChanges = { financeChange: 0, sleepChangeMinutes: 0, studyChangeMinutes: 0 };
 
             if (category === 'study' || category === 'grade') {
@@ -514,9 +511,7 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
             } else if (category === 'sleep') {
                 oppositeChanges.sleepChangeMinutes += oppositeDuration;
             } else if (category === 'finance') {
-                // 재정은 cost로 처리되므로 추가 시간 변화 없음
             } else {
-                // 카테고리가 없으면 기존 로직 사용
                 oppositeChanges = calculateStateChanges(
                     choiceType,
                     oppositeChoiceValue,
@@ -525,7 +520,7 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
                 );
             }
 
-            // 재정 변화 적용 (입력받은 cost 반영)
+            // 재정 변화 적용
             oppositeChanges.financeChange -= oppositeCostValue;
 
             const branch = await Branch.create({
@@ -565,7 +560,6 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
     });
 });
 
-
 // 모든 선택 및 히스토리 초기화
 const resetAllData = asyncHandler(async (req, res) => {
     await HourlyChoice.deleteMany({});
@@ -588,7 +582,6 @@ const resetAllData = asyncHandler(async (req, res) => {
 
 // 설명 생성 함수
 const generateDescription = (choiceType, choice, subject, cost) => {
-    // cost 포함 설명
     const costText = cost > 0 ? `+${cost.toLocaleString()}원` : cost < 0 ? `${cost.toLocaleString()}원` : '';
 
     const descriptions = {
@@ -860,17 +853,13 @@ const deleteChoice = asyncHandler(async (req, res) => {
 // 시간표 상태 조회
 const checkScheduleStatus = asyncHandler(async (req, res) => {
     const { day, period } = req.body;
-    // 저장된 시간표 배열 조회
     const settings = await UserSettings.findOne().select('timetableArray');
-    // 데이터 유효성 및 초기 설정 확인
     if (!settings || !settings.timetableArray || settings.timetableArray.length === 0) {
-        // 시간표 설정이 없거나 비어있으면 수업이 없다고 가정
         return res.status(200).json({ hasClass: false });
     }
 
     const timetableArray = settings.timetableArray;
 
-    // 요일 및 교시를 배열 인덱스로 변환
     const dayIndex = WEEKDAYS_MAP[day];
     const periodIndex = period - 1;
 
@@ -903,28 +892,26 @@ const calculateStateChanges = (choiceType, choice, cost, duration = 60) => {
             switch (choice) {
                 case 'attend':
                 case 'attend_coffee':
-                    studyChangeMinutes += duration; // 수업 시간만큼 학습 시간 증가
+                    studyChangeMinutes += duration;
                     break;
                 case 'skip_sleep':
-                    sleepChangeMinutes += duration; // 수업 시간만큼 수면 시간 증가
+                    sleepChangeMinutes += duration;
                     break;
                 case 'skip_play':
-                    studyChangeMinutes -= 10; // 수업을 안 들었으니 약간의 패널티
                     break;
             }
             break;
         case 'sleep':
             switch (choice) {
                 case 'sleep':
-                    sleepChangeMinutes += duration; // 수면 시간 증가
+                    sleepChangeMinutes += duration;
                     break;
                 case 'stay_up':
-                    studyChangeMinutes += duration; // 밤샘 공부 시간만큼 학습 시간 증가
-                    sleepChangeMinutes -= duration; // 수면 시간 감소
+                    studyChangeMinutes += duration;
+                    sleepChangeMinutes -= duration;
                     break;
                 case 'stay_up_play':
-                    studyChangeMinutes -= 20; // 놀았으니 학습 패널티
-                    sleepChangeMinutes -= duration; // 수면 시간 감소
+                    sleepChangeMinutes -= duration;
                     break;
             }
             break;
@@ -933,23 +920,20 @@ const calculateStateChanges = (choiceType, choice, cost, duration = 60) => {
             // AI 또는 자유 시간 선택의 경우
             switch (choice) {
                 case 'study':
-                case 'choice_A': // 선택 A, B가 공부/수면/재정 중 하나에 기여한다고 가정
+                case 'choice_A':
                     studyChangeMinutes += duration;
                     break;
                 case 'sleep':
-                case 'choice_B': // 평행 선택
+                case 'choice_B':
                     sleepChangeMinutes += duration;
                     break;
                 case 'rest':
-                    sleepChangeMinutes += duration / 2; // 휴식은 수면 시간의 절반 정도 기여
+                    sleepChangeMinutes += duration / 2;
                     break;
                 case 'part_time':
-                    // 재정 변화는 cost로 이미 반영됨
                     break;
-                // 기타 선택지에 따른 추가 로직...
             }
             break;
-        // meal이나 기타 선택지는 큰 변화가 없다고 가정
     }
 
     // 시간당 획득/손실 점수를 간단하게 분 단위로 반영

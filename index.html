@@ -259,7 +259,6 @@
             }
         }
 
-
         // 시간표 버튼
         async function showTimetableScreen() {
             document.getElementById('homeScreen').style.display = 'none';
@@ -855,9 +854,8 @@
         }
 
         // 부호에 따라 색상 지정
-        function formatChange(value, unit, isFinance) {
+        function formatChange(value, unit) {
             if (value === null || value === undefined) return `0${unit}`;
-            if (isFinance) value = -value;
             if (value > 0) {
                 return `<span style="color: #6ee7b7;">+${value.toLocaleString()}${unit}</span>`; // Tailwind green-300
             } else if (value < 0) {
@@ -887,9 +885,9 @@
                 <div class="universe-title">✨ 나의 우주 선택 (${dayNameKr} ${a.hour}시)</div>
                 <p class="universe-description">${a.description}</p>
                 <div class="universe-stats">
-                    <span>💰 재정: ${formatChange(a.financeChange || 0, '원', true)}</span>
-                    <span>📚 학습: ${formatChange(a.studyChangeMinutes || 0, '분', false)}</span>
-                    <span>😴 수면: ${formatChange(a.sleepChangeMinutes || 0, '분', false)}</span>
+                    <span>💰 재정: ${formatChange(a.financeChange || 0, '원')}</span>
+                    <span>📚 학습: ${formatChange(a.studyChangeMinutes || 0, '분')}</span>
+                    <span>😴 수면: ${formatChange(a.sleepChangeMinutes || 0, '분')}</span>
                 </div>
             </div>
         `;
