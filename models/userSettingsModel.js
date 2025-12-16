@@ -20,6 +20,14 @@ const userSettingsSchema = new mongoose.Schema({
     totalSleepMinutes: {
         type: Number,
         default: 0
+    },
+    totalStudyMinutes: {
+        type: Number,
+        default: 0
+    },
+    timetableArray: {
+        type: [[Number]],  // 2D 배열 (5일 x 6교시)
+        default: []
     }
 }, {
     timestamps: true

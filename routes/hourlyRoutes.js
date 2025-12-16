@@ -2,19 +2,33 @@ const express = require("express");
 const router = express.Router();
 const {
     saveInitialSettings,
-    getSettings,
+    checkScheduleStatus
+} = require("../controllers/Schedule");
+
+const {
     getHourlyQuestion,
     saveHourlyChoice,
-    getHourlyBranchQuestion,
+    getHourlyBranchQuestion
+} = require("../controllers/choice");
+
+const {
+    getSettings,
     getWeeklyStatistics,
-    getWeeklyHistory,
     getDailyChoices,
-    getRawStats,
     updateChoice,
     deleteChoice,
-    checkScheduleStatus,
     resetAllData
-} = require("../controllers/hourlyController");
+} = require("../controllers/setting");
+
+const {
+    getWeeklyHistory
+} = require("../controllers/history");
+
+const {
+    getRawStatsInternal,
+    getRawStats,
+    getWeakestState
+} = require("../controllers/Stats");
 
 // 초기 설정
 router.post("/settings", saveInitialSettings); // 시간표 + 초기 재정 저장

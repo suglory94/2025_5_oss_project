@@ -16,7 +16,7 @@ const hourlyChoiceSchema = new mongoose.Schema({
     },
     choiceType: {
         type: String,
-        enum: ["class", "meal", "study", "free_time", "sleep", "exercise", "hobby"],
+        enum: ["class", "meal", "study", "free_time", "sleep", "exercise", "hobby", "ai_branch", "rest"],
         required: true
     },
     choice: {
@@ -32,7 +32,19 @@ const hourlyChoiceSchema = new mongoose.Schema({
         type: Number,
         default: 60
     },
-    description: String
+    description: String,
+    sleepChangeMinutes: {
+        type: Number,
+        default: 0
+    },
+    studyChangeMinutes: {
+        type: Number,
+        default: 0
+    },
+    financeChange: {
+        type: Number,
+        default: 0
+    }
 }, {
     timestamps: true
 });

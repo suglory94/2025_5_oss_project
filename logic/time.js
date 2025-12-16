@@ -1,19 +1,14 @@
-import axios from "axios";
-
-
 // 1) 현재 요일 계산
 const DAYS = [
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday"
+    {index : 0}, //monday
+    {index : 1}, //tuesday
+    {index : 2}, //wedenesday
+    {index : 3}, //thursday
+    {index : 0}//friday
 ];
 
 export function getToday() {
-    return DAYS[new Date().getDay()];
+    return DAYS[new Date().getDay()].index;
 }
 
 
@@ -46,18 +41,15 @@ export function NextClass() {
 }
 
 
-// 3) 백엔드한테 해당 교시에 수업 있는지 요청
-export async function checkClassStatus(day, period) {
-    try {
-        const response = await axios.post(
-            "http://localhost:3000/api/hourly/schedule/check", //*backend
-            { day, period }
-        );
+// 특정 교시에 수업이 있는지 확인
+const checkClassStatusFromArray = (timetableArray, dayIndex, period) => {
+    const periodIndex = period - 1;
 
-        return response.data.hasClass; // *backend
-    } catch (error) {
-        console.error("수업 여부 조회 실패:", error);
-        return null;  // 실패하면 false로 처리
+    // 인덱스 유효성 검사 (월~금, 1~6교시)
+    if (dayIndex >= 0 && dayIndex <= 4 && periodIndex >= 0 && periodIndex <= 5) {
+        // timetableArray[요일 인덱스][교시 인덱스] == 1 (수업 있음)
+        return timetableArray[dayIndex] && timetableArray[dayIndex][periodIndex] === 1;
     }
-}
+    return false;
+};
 
