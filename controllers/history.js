@@ -1,5 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const UserSettings = require("../models/userSettingsModel");
+const HourlyChoice = require("../models/hourlyChoiceModel");
+const Branch = require("../models/branchModel");
 
 // 히스토리 조회 (실제 우주 + 평행 우주)
 const getWeeklyHistory = asyncHandler(async (req, res) => {
@@ -85,5 +87,6 @@ const calculateStateChanges = (choiceType, choice, cost, duration = 60) => {
 };
 
 module.exports = {
-    getWeeklyHistory
+    getWeeklyHistory,
+    calculateStateChanges
 };

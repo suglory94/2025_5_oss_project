@@ -1,7 +1,27 @@
-import findNextClassDetails from "./hourlyController.js";
-import getWeakestState from "./Stats.js"
 const asyncHandler = require("express-async-handler");
 const UserSettings = require("../models/userSettingsModel");
+const HourlyChoice = require("../models/hourlyChoiceModel");
+const Branch = require("../models/branchModel");
+const Schedule = require("../models/scheduleModel");
+
+// CheckClass.js에서 함수들 import (같은 controllers 폴더에 있다고 가정)
+const {
+    findNextClassDetails,
+    checkClassStatusFromArray,
+    getCurrentPeriod,
+    timeToMinutes,
+    DAYS,
+    PERIOD_TIMES
+} = require("./CheckClass");
+
+// Stats.js에서 함수들 import
+const { getRawStatsInternal, getWeakestState } = require("./Stats");
+
+// history.js에서 함수 import
+const { calculateStateChanges } = require("./history");
+
+// setting.js에서 함수 import
+const { generateDescription } = require("./setting");
 
 // 시간별 선택 질문 생성
 const getHourlyQuestion = asyncHandler(async (req, res) => {
@@ -79,7 +99,6 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
                 choiceType: "class",
                 question: `현재 ${currentPeriod}교시 ${subject} 수업 중입니다.`,
                 options: [
-                    // ... (수업 관련 옵션) ...
                     { value: "attend", label: "수업 듣기", hasCost: false },
                     { value: "attend_coffee", label: "수업 듣고 커피 사기", hasCost: true, costPrompt: "커피 값은 얼마였나요" },
                     { value: "skip_sleep", label: "결석하고 자기", hasCost: false },
@@ -122,43 +141,65 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
         });
     }
 
-    // 4. 자유 시간
-    const { choice } = require('../ai/choice');
+    // 4. 자유 시간 - AI 선택지 생성
     if (currentDay !== -1 && currentHour >= 8 && currentHour < 23) {
-        // 가장 부족한 상태를 찾음 (choice.js가 필요로 함)
+        // 가장 부족한 상태를 찾음
         const rawStats = await getRawStatsInternal();
         const calculatedWeakestState = getWeakestState(rawStats);
 
-        // choice.js의 AI에게 2가지 선택지를 요청
-        const aiChoices = await choice({
-            period: currentPeriod || '자유',
-            hasClass: isCurrentTimeClass,
-            weakestState: calculatedWeakestState,
-            currentStats: rawStats
-        });
-
-        if (aiChoices.choices && aiChoices.choices.length === 2) {
-            // choice.js가 생성한 AI 선택지를 반환
-            return res.status(200).json({
-                day: currentDay,
-                hour: currentHour,
-                choiceType: "ai_branch", // 새로운 타입으로 설정
-                question: aiChoices.message, // AI가 만든 상황 설명
-                options: aiChoices.choices.map((c, index) => ({
-                    value: `choice_${index === 0 ? 'A' : 'B'}`, // 선택지를 구별할 수 있는 value
-                    label: c.label,
-                    category: c.category, // AI 조언을 위해 카테고리 추가 (study|sleep|finance)
-                    hasCost: true, // 임의로 비용을 받는다고 가정 (프론트에서 처리)
-                    costPrompt: "활동 비용/수입은 얼마였나요?",
-                    needsDescription: false
-                }))
+        // choice.js 파일이 있다고 가정하고 AI에게 2가지 선택지를 요청
+        // 실제로는 choice.js (AI 모듈)가 별도로 존재해야 함
+        try {
+            // AI 모듈이 존재하는 경우
+            const { choice } = require('../ai/choice');
+            
+            const aiChoices = await choice({
+                period: currentPeriod || '자유',
+                hasClass: false,
+                weakestState: calculatedWeakestState,
+                currentStats: rawStats
             });
+
+            if (aiChoices.choices && aiChoices.choices.length === 2) {
+                return res.status(200).json({
+                    day: currentDay,
+                    hour: currentHour,
+                    choiceType: "ai_branch",
+                    question: aiChoices.message,
+                    options: aiChoices.choices.map((c, index) => ({
+                        value: `choice_${index === 0 ? 'A' : 'B'}`,
+                        label: c.label,
+                        category: c.category,
+                        hasCost: true,
+                        costPrompt: "활동 비용/수입은 얼마였나요?",
+                        needsDescription: false
+                    }))
+                });
+            }
+        } catch (error) {
+            // AI 모듈이 없는 경우 기본 선택지 제공
+            console.log('AI module not found, using default choices');
         }
+
+        // AI 모듈이 없거나 오류가 발생한 경우 기본 자유시간 선택지
+        return res.status(200).json({
+            day: currentDay,
+            hour: currentHour,
+            choiceType: "free_time",
+            question: "자유 시간입니다. 무엇을 하시겠습니까?",
+            options: [
+                { value: "study", label: "공부하기", hasCost: false },
+                { value: "exercise", label: "운동하기", hasCost: false },
+                { value: "hobby", label: "취미활동", hasCost: true, costPrompt: "비용은 얼마였나요?" },
+                { value: "rest", label: "휴식", hasCost: false },
+                { value: "part_time", label: "알바하기", hasCost: true, costPrompt: "얼마를 벌었나요? (양수로 입력)" }
+            ]
+        });
     }
 
     // 5. 모든 조건에 해당하지 않는 경우 (예: 주말, 새벽 7시 등)
     return res.status(200).json({
-        day: currentDay, // 주말이면 -1
+        day: currentDay,
         hour: currentHour,
         choiceType: "rest",
         question: "현재는 활동 시간이 아니거나 주말입니다. 잠시 휴식하세요.",
@@ -185,9 +226,7 @@ const getHourlyBranchQuestion = asyncHandler(async (req, res) => {
             subject,
             question: `수업에 참석하기로 했습니다. 커피는 사시겠습니까?`,
             options: [
-                // 참석 + 커피 안 사기
                 { value: "attend", label: "커피 없이 수업 듣기", hasCost: false },
-                // 참석 + 커피 사기
                 { value: "attend_coffee", label: "커피 사서 수업 듣기", hasCost: true, costPrompt: "커피 값은 얼마였나요?" }
             ],
             isFinalBranch: true
@@ -201,9 +240,7 @@ const getHourlyBranchQuestion = asyncHandler(async (req, res) => {
             subject,
             question: `수업을 결석하기로 했습니다. 무엇을 하시겠습니까?`,
             options: [
-                // 결석 + 자기
                 { value: "skip_sleep", label: "자기", hasCost: false },
-                // 결석 + 놀기 (자유시간)
                 { value: "skip_play", label: "놀기 (자유시간)", hasCost: true, costPrompt: "얼마를 소비했나요:" }
             ],
             isFinalBranch: true
@@ -239,10 +276,8 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
     // 설명 생성
     let description;
     if (customDescription) {
-        // 사용자가 직접 입력한 설명
         description = customDescription;
     } else {
-        // 자동 생성
         description = generateDescription(choiceType, choice, subject, cost);
     }
 
@@ -252,8 +287,8 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
     const actualChanges = calculateStateChanges(choiceType, choice, cost, duration);
 
     // 1. 재정, 수면 시간 업데이트
-    settings.currentBudget += actualChanges.financeChange; // cost 대신 financeChange 사용
-    settings.totalSleepMinutes += actualChanges.sleepChangeMinutes; // 수면 시간 반영
+    settings.currentBudget += actualChanges.financeChange;
+    settings.totalSleepMinutes += actualChanges.sleepChangeMinutes;
     settings.totalStudyMinutes += actualChanges.studyChangeMinutes;
 
     await settings.save();
@@ -276,15 +311,13 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
     // 3. 평행우주 생성
     const savedBranches = [];
     if (parallelChoices && Array.isArray(parallelChoices)) {
-        // 받은 배열(parallelChoices)의 각 항목을 순회하며 Branch를 생성합니다.
         for (const oppositeData of parallelChoices) {
-            // Branch 모델에 저장할 데이터 구성
             const oppositeChoiceValue = oppositeData.value || "none";
             const oppositeCostValue = oppositeData.cost !== undefined ? oppositeData.cost : 0;
             const oppositeDuration = oppositeData.duration || 60;
             const category = oppositeData.category;
 
-            // 상태 변화 계산 (category가 있으면 우선 사용)
+            // 상태 변화 계산
             let oppositeChanges = { financeChange: 0, sleepChangeMinutes: 0, studyChangeMinutes: 0 };
 
             if (category === 'study' || category === 'grade') {
@@ -292,9 +325,8 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
             } else if (category === 'sleep') {
                 oppositeChanges.sleepChangeMinutes += oppositeDuration;
             } else if (category === 'finance') {
-                // 재정은 cost로 처리되므로 추가 시간 변화 없음
+                // 재정은 cost로 처리
             } else {
-                // 카테고리가 없으면 기존 로직 사용
                 oppositeChanges = calculateStateChanges(
                     choiceType,
                     oppositeChoiceValue,
@@ -303,7 +335,7 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
                 );
             }
 
-            // 재정 변화 적용 (입력받은 cost 반영)
+            // 재정 변화 적용
             oppositeChanges.financeChange -= oppositeCostValue;
 
             const branch = await Branch.create({

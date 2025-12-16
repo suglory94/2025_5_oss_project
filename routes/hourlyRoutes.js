@@ -17,8 +17,7 @@ const {
     getDailyChoices,
     updateChoice,
     deleteChoice,
-    resetAllDAta,
-    getWeeklyHistory
+    resetAllData
 } = require("../controllers/setting");
 
 const {

@@ -4,7 +4,6 @@ const UserSettings = require("../models/userSettingsModel");
 const HourlyChoice = require("../models/hourlyChoiceModel");
 const Branch = require("../models/branchModel");
 
-
 // 설정 조회
 const getSettings = asyncHandler(async (req, res) => {
     const settings = await UserSettings.findOne();
@@ -75,6 +74,78 @@ const generateDescription = (choiceType, choice, subject, cost) => {
     };
 
     return descriptions[choiceType]?.[choice] || `${choice} (${costText})`;
+};
+
+// 평행우주 반대 선택 생성 함수
+const generateOpposite = async (choiceType, choice, cost, subject) => {
+    let oppositeChoice = '';
+    let oppositeCost = 0;
+    let oppositeDescription = '';
+
+    switch (choiceType) {
+        case 'class':
+            if (choice === 'attend' || choice === 'attend_coffee') {
+                oppositeChoice = 'skip_sleep';
+                oppositeCost = 0;
+                oppositeDescription = `${subject} 수업을 땡땡이 치고 잔다`;
+            } else {
+                oppositeChoice = 'attend';
+                oppositeCost = 0;
+                oppositeDescription = `${subject} 수업을 듣는다`;
+            }
+            break;
+        
+        case 'meal':
+            if (choice === 'skip') {
+                oppositeChoice = 'cafeteria';
+                oppositeCost = -5000;
+                oppositeDescription = '학식을 먹는다 (-5,000원)';
+            } else {
+                oppositeChoice = 'skip';
+                oppositeCost = 0;
+                oppositeDescription = '밥을 거른다';
+            }
+            break;
+        
+        case 'sleep':
+            if (choice === 'sleep') {
+                oppositeChoice = 'stay_up';
+                oppositeCost = 0;
+                oppositeDescription = '밤을 새워 공부한다';
+            } else {
+                oppositeChoice = 'sleep';
+                oppositeCost = 0;
+                oppositeDescription = '잠을 잔다';
+            }
+            break;
+        
+        case 'free_time':
+            if (choice === 'study') {
+                oppositeChoice = 'rest';
+                oppositeCost = 0;
+                oppositeDescription = '휴식을 취한다';
+            } else if (choice === 'part_time') {
+                oppositeChoice = 'study';
+                oppositeCost = 0;
+                oppositeDescription = '공부를 한다';
+            } else {
+                oppositeChoice = 'study';
+                oppositeCost = 0;
+                oppositeDescription = '공부를 한다';
+            }
+            break;
+        
+        default:
+            oppositeChoice = 'rest';
+            oppositeCost = 0;
+            oppositeDescription = '휴식을 취한다';
+    }
+
+    return {
+        oppositeChoice,
+        oppositeCost,
+        oppositeDescription
+    };
 };
 
 // 통계 조회
@@ -193,11 +264,16 @@ const updateChoice = asyncHandler(async (req, res) => {
 
     // 재정 재계산
     const settings = await UserSettings.findOne();
+    
+    // 기존 비용 롤백
+    settings.currentBudget -= hourlyChoice.cost;
+    
     // 수면 시간 업데이트를 위해 기존 비용과 수면 시간을 롤백해야 함
     if (hourlyChoice.choice === "sleep") {
         settings.totalSleepMinutes -= hourlyChoice.duration;
     }
-    settings.currentBudget -= hourlyChoice.cost;
+    
+    // 새 비용 적용
     settings.currentBudget += cost;
 
     // 선택 업데이트
@@ -272,5 +348,7 @@ module.exports = {
     getDailyChoices,
     updateChoice,
     deleteChoice,
-    resetAllData
+    resetAllData,
+    generateDescription,
+    generateOpposite
 };

@@ -1,6 +1,5 @@
 const Schedule = require("../models/scheduleModel");
 
-
 // 요일 인덱스
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 const WEEKDAYS_MAP = {
@@ -113,3 +112,13 @@ const findNextClassDetails = (scheduleDoc) => {
 
     return nextClassDetails;
 }
+
+module.exports = {
+    findNextClassDetails,
+    checkClassStatusFromArray,
+    getCurrentPeriod,
+    timeToMinutes,
+    DAYS,
+    WEEKDAYS_MAP,
+    PERIOD_TIMES
+};

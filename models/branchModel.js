@@ -7,7 +7,19 @@ const branchSchema = new mongoose.Schema({
     choiceType: String,
     oppositeChoice: String,
     oppositeCost: Number,
-    oppositeDescription: String
+    oppositeDescription: String,
+    oppositeSleepChangeMinutes: {
+        type: Number,
+        default: 0
+    },
+    oppositeStudyChangeMinutes: {
+        type: Number,
+        default: 0
+    },
+    oppositeFinanceChange: {
+        type: Number,
+        default: 0
+    }
 }, {
     timestamps: true
 });
