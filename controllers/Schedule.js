@@ -44,10 +44,10 @@ const saveInitialSettings = asyncHandler(async (req, res) => {
 // 시간표 상태 조회
 const checkScheduleStatus = asyncHandler(async (req, res) => {
     const { day, period } = req.body;
-    
+
     // 저장된 시간표 배열 조회
     const settings = await UserSettings.findOne().select('timetableArray');
-    
+
     // 데이터 유효성 및 초기 설정 확인
     if (!settings || !settings.timetableArray || settings.timetableArray.length === 0) {
         // 시간표 설정이 없거나 비어있으면 수업이 없다고 가정

@@ -15,7 +15,7 @@ const getWeeklyHistory = asyncHandler(async (req, res) => {
 });
 
 // 상태 변화 계산 함수
-const calculateStateChanges = (choiceType, choice, cost, duration = 60) => {
+const calculateStateChanges = (choiceType, choice, cost, duration = 75) => {
     let financeChange = 0;
     let sleepChangeMinutes = 0;
     let studyChangeMinutes = 0;
