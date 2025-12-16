@@ -1,15 +1,15 @@
 // 1) 현재 요일 계산
-const DAYS = [
-    {index : 0}, //monday
-    {index : 1}, //tuesday
-    {index : 2}, //wedenesday
-    {index : 3}, //thursday
-    {index : 0}//friday
-];
-
 export function getToday() {
-    return DAYS[new Date().getDay()].index;
+    const Day = new Date().getDay(); // 0~6 (일~토)
+
+    // 월(1)~금(5)만 허용
+    if (Day >= 1 && Day <= 5) {
+        return Day - 1; // monday = 0
+    }
+
+    return -1; // 주말
 }
+
 
 
 // 2) 다음 교시 계산
@@ -37,13 +37,13 @@ export function NextClass() {
             return p.class;
     }
 
-    return null;
+    return -1; //오늘 더 이상 수업이 없음
 }
 
 
 // 특정 교시에 수업이 있는지 확인
 const checkClassStatusFromArray = (timetableArray, dayIndex, period) => {
-    const periodIndex = period - 1;
+    const periodIndex = period-1;
 
     // 인덱스 유효성 검사 (월~금, 1~6교시)
     if (dayIndex >= 0 && dayIndex <= 4 && periodIndex >= 0 && periodIndex <= 5) {
@@ -53,3 +53,10 @@ const checkClassStatusFromArray = (timetableArray, dayIndex, period) => {
     return false;
 };
 
+// 최종 수업 여부 확인 함수 
+export function checkClass(timetableArray){
+    let dayIndex = getTdoay();
+    let period = NextClass();
+
+    return checkClassStatusFromArray(timetableArray,dayIndex,period);
+}
