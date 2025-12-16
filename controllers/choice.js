@@ -227,7 +227,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
             ]
         });
     }
-    }
+    
     // 5. 모든 조건에 해당하지 않는 경우 (예: 주말, 새벽 7시 등)
     return res.status(200).json({
         day: currentDay,
