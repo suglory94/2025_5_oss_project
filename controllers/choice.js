@@ -22,6 +22,7 @@ const { calculateStateChanges } = require("./history");
 
 // setting.js에서 함수 import
 const { generateDescription } = require("./setting");
+const { choiceForfreetime } = require("../ai/choiceByai");
 
 // 시간별 선택 질문 생성
 const getHourlyQuestion = asyncHandler(async (req, res) => {
@@ -143,42 +144,72 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
 
     // 4. 자유 시간 - AI 선택지 생성
     if (currentDay !== -1 && currentHour >= 8 && currentHour < 23) {
-        // 가장 부족한 상태를 찾음
-        const rawStats = await getRawStatsInternal();
-        const calculatedWeakestState = getWeakestState(rawStats);
-
-        // choice.js 파일이 있다고 가정하고 AI에게 2가지 선택지를 요청
-        // 실제로는 choice.js (AI 모듈)가 별도로 존재해야 함
         try {
-            // AI 모듈이 존재하는 경우
-            const { choice } = require('../ai/choice');
+            // 가장 부족한 상태를 찾음
+            const rawStats = await getRawStatsInternal();
+            const calculatedWeakestState = getWeakestState(rawStats);
+
+            // AI 모듈 import
+            const { choiceForfreetime } = require('../ai/choiceByai');
             
-            const aiChoices = await choice({
-                period: currentPeriod || '자유',
-                hasClass: false,
-                weakestState: calculatedWeakestState,
-                currentStats: rawStats
+            // AI에게 선택지 요청
+            const aiChoices = await choiceForfreetime({
+                rawStats: rawStats,
+                weakestState: calculatedWeakestState
             });
 
-            if (aiChoices.choices && aiChoices.choices.length === 2) {
+            // AI가 정상적으로 선택지를 생성한 경우
+            if (aiChoices && aiChoices.choices && aiChoices.choices.length === 2) {
                 return res.status(200).json({
                     day: currentDay,
                     hour: currentHour,
                     choiceType: "ai_branch",
                     question: aiChoices.message,
-                    options: aiChoices.choices.map((c, index) => ({
-                        value: `choice_${index === 0 ? 'A' : 'B'}`,
-                        label: c.label,
-                        category: c.category,
-                        hasCost: true,
-                        costPrompt: "활동 비용/수입은 얼마였나요?",
-                        needsDescription: false
-                    }))
+                    options: aiChoices.choices.map((c, index) => {
+                        // 카테고리별로 hasCost와 costPrompt 설정
+                        let hasCost = false;
+                        let costPrompt = null;
+
+                        // AI가 생성한 label을 분석해서 알바/수입 관련인지 확인
+                        const isIncomeActivity = c.label.includes('알바') || 
+                                                c.label.includes('아르바이트') || 
+                                                c.label.includes('일') ||
+                                                c.label.includes('벌');
+
+                        switch (c.category) {
+                            case 'study':
+                                // 공부: 비용 입력 없음
+                                hasCost = false;
+                                break;
+                            case 'sleep':
+                                // 수면: 비용 입력 없음
+                                hasCost = false;
+                                break;
+                            case 'finance':
+                                // 재정: 비용/수입에 따라 다르게 표시
+                                hasCost = true;
+                                if (isIncomeActivity) {
+                                    costPrompt = "얼마를 벌었나요? (양수로 입력, 예: 5000)";
+                                } else {
+                                    costPrompt = "얼마를 썼나요? (음수로 입력, 예: -5000)";
+                                }
+                                break;
+                        }
+
+                        return {
+                            value: `choice_${index === 0 ? 'A' : 'B'}`,
+                            label: c.label,
+                            category: c.category,
+                            hasCost: hasCost,
+                            costPrompt: costPrompt
+                        };
+                    })
                 });
             }
         } catch (error) {
-            // AI 모듈이 없는 경우 기본 선택지 제공
-            console.log('AI module not found, using default choices');
+            // AI 모듈이 없거나 오류가 발생한 경우
+            console.log('AI module error:', error.message);
+            console.log('Using default choices');
         }
 
         // AI 모듈이 없거나 오류가 발생한 경우 기본 자유시간 선택지
@@ -190,7 +221,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
             options: [
                 { value: "study", label: "공부하기", hasCost: false },
                 { value: "exercise", label: "운동하기", hasCost: false },
-                { value: "hobby", label: "취미활동", hasCost: true, costPrompt: "비용은 얼마였나요?" },
+                { value: "hobby", label: "취미활동", hasCost: true, costPrompt: "얼마를 썼나요? (음수로 입력, 예: -5000)" },
                 { value: "rest", label: "휴식", hasCost: false },
                 { value: "part_time", label: "알바하기", hasCost: true, costPrompt: "얼마를 벌었나요? (양수로 입력)" }
             ]
@@ -204,7 +235,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
         choiceType: "rest",
         question: "현재는 활동 시간이 아니거나 주말입니다. 잠시 휴식하세요.",
         options: [
-            { value: "rest_passive", label: "잠시 휴식하기", hasCost: false, costPrompt: null, needsDescription: false }
+            { value: "rest_passive", label: "잠시 휴식하기", hasCost: false }
         ]
     });
 });

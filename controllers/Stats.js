@@ -75,11 +75,12 @@ const getRawStats = asyncHandler(async (req, res) => {
     }
 
     res.status(200).json(rawStats);
+    return rawStats 
 });
 
 // 가장 부족한 상태 찾기
 const getWeakestState = (rawStats) => {
-    if (!rawStats) return 'grade';
+    if (!rawStats) return false ;
 
     const scores = {
         study: rawStats.grade,
@@ -89,6 +90,9 @@ const getWeakestState = (rawStats) => {
 
     let weakestState = 'grade';
     let minScore = scores.study;
+
+    if(scores.study === scores.sleep && scores.sleep === scores.finance)
+        return 0
 
     for (const [state, score] of Object.entries(scores)) {
         if (score < minScore) {
