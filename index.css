@@ -666,3 +666,30 @@ body {
     gap: 15px;
     justify-content: flex-end;
 }
+
+/* 히스토리 화면 전체 */
+.history-screen {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* 왼쪽 히스토리 */
+.history-container {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+/* ⭐ 오른쪽 Three.js 전체 영역 */
+#three-container {
+  flex: 1;                 /* 화면 절반 이상 차지 */
+  height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0,0,0,0.4);
+  border-left: 1px solid rgba(139,92,246,0.4);
+}
