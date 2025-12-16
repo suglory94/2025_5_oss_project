@@ -1,3 +1,6 @@
+const asyncHandler = require("express-async-handler");
+
+
 // 값 상태 (재정, 수면 시간, 학습 시간)
 const getRawStatsInternal = async () => {
     const settings = await UserSettings.findOne();
@@ -59,4 +62,44 @@ const getRawStatsInternal = async () => {
         sleep: sleepScore,
         finance: financeScore
     };
+};
+
+// 학습 시간, 수면, 재정 상태 조회
+const getRawStats = asyncHandler(async (req, res) => {
+    const rawStats = await getRawStatsInternal();
+
+    if (!rawStats) {
+        return res.status(404).json({ message: "초기 설정 데이터가 없습니다" });
+    }
+
+    res.status(200).json(rawStats);
+});
+
+// 가장 부족한 상태 찾기
+const getWeakestState = (rawStats) => {
+    if (!rawStats) return 'grade';
+
+    const scores = {
+        study: rawStats.grade,
+        sleep: rawStats.sleep,
+        finance: rawStats.finance
+    };
+
+    let weakestState = 'grade';
+    let minScore = scores.grade;
+
+    for (const [state, score] of Object.entries(scores)) {
+        if (score < minScore) {
+            minScore = score;
+            weakestState = state;
+        }
+    }
+
+    return weakestState;
+};
+
+module.exports = {
+    getRawStats,
+    getRawStatsInternal,
+    getWeakestState,
 };

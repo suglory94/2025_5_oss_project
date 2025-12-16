@@ -1,49 +1,45 @@
-// 1) 현재 요일 계산
-export function getToday() {
-    const Day = new Date().getDay(); // 0~6 (일~토)
+const Schedule = require("../models/scheduleModel");
 
-    // 월(1)~금(5)만 허용
-    if (Day >= 1 && Day <= 5) {
-        return Day - 1; // monday = 0
-    }
 
-    return -1; // 주말
+// 요일 인덱스
+const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+const WEEKDAYS_MAP = {
+    monday: 0,
+    tuesday: 1,
+    wednesday: 2,
+    thursday: 3,
+    friday: 4
+};
+
+// 교시별 시간 정보
+const PERIOD_TIMES = {
+    1: { start: "09:00", end: "10:15" },
+    2: { start: "10:30", end: "11:45" },
+    3: { start: "12:00", end: "13:15" },
+    4: { start: "13:30", end: "14:45" },
+    5: { start: "15:00", end: "16:15" },
+    6: { start: "16:30", end: "17:45" }
+};
+
+// 문자열을 분으로 변환
+const timeToMinutes = (timeStr) => {
+    const [h, m] = timeStr.split(":").map(Number);
+    return h * 60 + m;
 }
 
-
-
-// 2) 다음 교시 계산
-export function NextClass() {
-    const now = new Date();
-    const hour = now.getHours();
-    const minute = now.getMinutes();
-
-    const time = hour * 60 + minute;
-
-    // 각 교시 수업 시간을 분으로 표현 
-    const classes = [
-        { class: 1, start: 540 },   // 9:00 ~ 10:15
-        { class: 2, start: 630 },   // 10:30 ~ 11:45
-        { class: 3, start: 720 },   // 12:00 ~ 13:15
-        { class: 4, start: 810 },   // 13:30 ~ 14:45
-        { class: 5, start: 900 },   // 15:00 ~ 16:15
-        { class: 6, start: 990 },  // 16:30 ~ 17:45
-        { class: 7, start: 1080 }  // 18:00 ~ 18:50
-    ];
-
-    // 다음 교시 찾기; 
-    for (const p of classes) {
-        if (p.start > time)
-            return p.class;
+// 현재 시간을 기준으로 교시 번호를 찾음
+const getCurrentPeriod = (currentMinutes) => {
+    for (const [period, times] of Object.entries(PERIOD_TIMES)) {
+        if (currentMinutes >= timeToMinutes(times.start) && currentMinutes < timeToMinutes(times.end)) {
+            return Number(period);
+        }
     }
-
-    return -1; //오늘 더 이상 수업이 없음
-}
-
+    return null;
+};
 
 // 특정 교시에 수업이 있는지 확인
 const checkClassStatusFromArray = (timetableArray, dayIndex, period) => {
-    const periodIndex = period-1;
+    const periodIndex = period - 1;
 
     // 인덱스 유효성 검사 (월~금, 1~6교시)
     if (dayIndex >= 0 && dayIndex <= 4 && periodIndex >= 0 && periodIndex <= 5) {
@@ -53,10 +49,67 @@ const checkClassStatusFromArray = (timetableArray, dayIndex, period) => {
     return false;
 };
 
-// 최종 수업 여부 확인 함수 
-export function checkClass(timetableArray){
-    let dayIndex = getTdoay();
-    let period = NextClass();
+// 가장 가까운 수업 찾기
+const findNextClassDetails = (scheduleDoc) => {
+    const now = new Date();
+    const currentDayJsIndex = now.getDay();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-    return checkClassStatusFromArray(timetableArray,dayIndex,period);
+    let currentDayDbIndex = -1;
+    if (currentDayJsIndex >= 1 && currentDayJsIndex <= 5) {
+        currentDayDbIndex = currentDayJsIndex - 1;
+    }
+
+    if (currentDayDbIndex === -1) {
+        return null;
+    }
+
+    let minTimeDiffMs = Infinity;
+    let nextClassDetails = null;
+
+    for (let d = 0; d < 5; d++) {
+        const checkDayDbIndex = d;
+        const checkDayName = DAYS[checkDayDbIndex];
+
+        const isToday = (checkDayDbIndex === currentDayDbIndex);
+        const startMinuteCheck = isToday ? currentMinutes : timeToMinutes("08:59");
+
+        const classesOnDay = scheduleDoc[checkDayName] || [];
+
+        for (let period = 1; period <= 6; period++) {
+            const periodTimes = PERIOD_TIMES[period];
+            const startMinutes = timeToMinutes(periodTimes.start);
+
+            const currentClass = classesOnDay.find(cls => {
+                const classStartMinutes = timeToMinutes(cls.start);
+                return classStartMinutes === startMinutes;
+            });
+
+            if (!currentClass) continue;
+
+            // 수업 날짜 계산
+            let classDate = new Date(now);
+
+            let daysToAdd = checkDayDbIndex - currentDayDbIndex;
+            if (daysToAdd < 0) daysToAdd += 5;
+
+            classDate.setDate(now.getDate() + daysToAdd);
+            classDate.setHours(Math.floor(startMinutes / 60), startMinutes % 60, 0, 0);
+
+            const timeDiffMs = classDate.getTime() - now.getTime();
+
+            if (timeDiffMs > 0 && timeDiffMs < minTimeDiffMs) {
+                minTimeDiffMs = timeDiffMs;
+                nextClassDetails = {
+                    day: checkDayDbIndex,
+                    hour: Math.floor(startMinutes / 60),
+                    minute: startMinutes % 60,
+                    subject: currentClass.subject,
+                    period: period
+                };
+            }
+        }
+    }
+
+    return nextClassDetails;
 }
