@@ -94,7 +94,7 @@ const generateOpposite = async (choiceType, choice, cost, subject) => {
                 oppositeDescription = `${subject} 수업을 듣는다`;
             }
             break;
-        
+
         case 'meal':
             if (choice === 'skip') {
                 oppositeChoice = 'cafeteria';
@@ -106,7 +106,7 @@ const generateOpposite = async (choiceType, choice, cost, subject) => {
                 oppositeDescription = '밥을 거른다';
             }
             break;
-        
+
         case 'sleep':
             if (choice === 'sleep') {
                 oppositeChoice = 'stay_up';
@@ -118,7 +118,7 @@ const generateOpposite = async (choiceType, choice, cost, subject) => {
                 oppositeDescription = '잠을 잔다';
             }
             break;
-        
+
         case 'free_time':
             if (choice === 'study') {
                 oppositeChoice = 'rest';
@@ -134,7 +134,7 @@ const generateOpposite = async (choiceType, choice, cost, subject) => {
                 oppositeDescription = '공부를 한다';
             }
             break;
-        
+
         default:
             oppositeChoice = 'rest';
             oppositeCost = 0;
@@ -264,15 +264,15 @@ const updateChoice = asyncHandler(async (req, res) => {
 
     // 재정 재계산
     const settings = await UserSettings.findOne();
-    
+
     // 기존 비용 롤백
     settings.currentBudget -= hourlyChoice.cost;
-    
+
     // 수면 시간 업데이트를 위해 기존 비용과 수면 시간을 롤백해야 함
     if (hourlyChoice.choice === "sleep") {
         settings.totalSleepMinutes -= hourlyChoice.duration;
     }
-    
+
     // 새 비용 적용
     settings.currentBudget += cost;
 

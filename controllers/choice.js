@@ -28,7 +28,7 @@ const { choiceForfreetime } = require("../ai/choiceByai");
 const getHourlyQuestion = asyncHandler(async (req, res) => {
     const now = new Date();
     const currentDayJsIndex = now.getDay();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const currentMinutes = now.getHours() * 75 + now.getMinutes();
 
     // 현재 요일
     const currentDay = (currentDayJsIndex >= 1 && currentDayJsIndex <= 5) ? currentDayJsIndex - 1 : -1;
@@ -227,7 +227,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
             ]
         });
     }
-
+    }
     // 5. 모든 조건에 해당하지 않는 경우 (예: 주말, 새벽 7시 등)
     return res.status(200).json({
         day: currentDay,
@@ -289,7 +289,7 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
         choice,
         subject,
         cost,
-        duration = 60,
+        duration = 75,
         customDescription,
         parallelChoices,
         parallelCost = 0,
@@ -306,16 +306,15 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
 
     // 설명 생성
     let description;
+    // 우주 상태 변화 계산
+    const actualChanges = calculateStateChanges(choiceType, choice, cost, duration);
     if (customDescription) {
         description = customDescription;
     } else {
-        description = generateDescription(choiceType, choice, subject, cost);
+        description = generateDescription(choiceType, choice, subject, actualChanges.financeChange);
     }
 
     const settings = await UserSettings.findOne();
-
-    // 우주 상태 변화 계산
-    const actualChanges = calculateStateChanges(choiceType, choice, cost, duration);
 
     // 1. 재정, 수면 시간 업데이트
     settings.currentBudget += actualChanges.financeChange;
@@ -345,7 +344,7 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
         for (const oppositeData of parallelChoices) {
             const oppositeChoiceValue = oppositeData.value || "none";
             const oppositeCostValue = oppositeData.cost !== undefined ? oppositeData.cost : 0;
-            const oppositeDuration = oppositeData.duration || 60;
+            const oppositeDuration = oppositeData.duration || 75;
             const category = oppositeData.category;
 
             // 상태 변화 계산
