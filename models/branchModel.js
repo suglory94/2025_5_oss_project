@@ -8,15 +8,15 @@ const branchSchema = new mongoose.Schema({
     oppositeChoice: String,
     oppositeCost: Number,
     oppositeDescription: String,
-    oppositeSleepChangeMinutes: {
+    oppositeFinanceChange: { // 실제 재정 변화량
         type: Number,
         default: 0
     },
-    oppositeStudyChangeMinutes: {
+    oppositeSleepChangeMinutes: { // 수면 시간 변화량 (분)
         type: Number,
         default: 0
     },
-    oppositeFinanceChange: {
+    oppositeStudyChangeMinutes: { // 학습 시간 변화량 (분)
         type: Number,
         default: 0
     }

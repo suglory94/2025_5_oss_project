@@ -45,7 +45,7 @@ const getRawStatsInternal = async () => {
     const targetAverageStudyHours = 5;
     const maxScore = 100;
     const minScore = 10;
-    const baseScore = 50;
+    const baseScore = 0;
 
     let studyScore;
 

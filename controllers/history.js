@@ -35,7 +35,7 @@ const calculateStateChanges = (choiceType, choice, cost, duration = 75) => {
                     sleepChangeMinutes += duration; // 수업 시간만큼 수면 시간 증가
                     break;
                 case 'skip_play':
-                    studyChangeMinutes -= 10; // 수업을 안 들었으니 약간의 패널티
+                    studyChangeMinutes -= duration; // 수업을 안 들었으니 약간의 패널티
                     break;
             }
             break;
@@ -49,7 +49,7 @@ const calculateStateChanges = (choiceType, choice, cost, duration = 75) => {
                     sleepChangeMinutes -= duration; // 수면 시간 감소
                     break;
                 case 'stay_up_play':
-                    studyChangeMinutes -= 20; // 놀았으니 학습 패널티
+                    studyChangeMinutes -= duration; // 놀았으니 학습 패널티
                     sleepChangeMinutes -= duration; // 수면 시간 감소
                     break;
             }

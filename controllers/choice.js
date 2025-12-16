@@ -174,6 +174,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
                         const isIncomeActivity = c.label.includes('알바') ||
                             c.label.includes('아르바이트') ||
                             c.label.includes('일') ||
+                            c.label.includes('근무') ||
                             c.label.includes('벌');
 
                         switch (c.category) {
@@ -197,7 +198,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
                         }
 
                         return {
-                            value: `choice_${index === 0 ? 'A' : 'B'}`,
+                            value: c.label,
                             label: c.label,
                             category: c.category,
                             hasCost: hasCost,

@@ -176,7 +176,6 @@
                     돌아가기
                 </button>
             </div>
-
             <!-- 리스트 영역 -->
             <div id="historyList" class="history-list">
                 <p style="text-align: center; color: #aaa;">기록을 불러오는 중...</p>
@@ -833,6 +832,27 @@
             if (!historyData || historyData.length === 0) {
                 listContainer.innerHTML = '<p style="text-align: center; color: #aaa;">아직 기록된 활동이 없습니다.</p>';
                 return;
+            }
+
+            const latestEntry = historyData[historyData.length - 1];
+            const latestActual = latestEntry.actual;
+
+            // 예시로, 'current' 값이 있다면 사용하고, 없다면 기본값 50을 사용합니다.
+            // 실제 백엔드 데이터에 따라 키 이름은 달라질 수 있습니다.
+            const latestFinance = latestActual.currentBudget / 10000; // 예산 만원당 10점으로 가정
+            const latestStudy = latestActual.currentStudyScore || 50;
+            const latestSleep = latestActual.currentSleepScore || 50;
+
+            // 점수를 0-100% 범위로 제한 (API 스펙에 맞게 조정 필요)
+            const financePercent = Math.min(100, Math.max(0, latestFinance));
+            const studyPercent = Math.min(100, Math.max(0, latestStudy));
+            const sleepPercent = Math.min(100, Math.max(0, latestSleep));
+
+            // 3D 캐릭터 업데이트
+            if (window.updateCharacter) {
+                window.updateCharacter.updateFinanceStatus(financePercent);
+                window.updateCharacter.updateStudy(studyPercent);
+                window.updateCharacter.updateSleep(sleepPercent);
             }
 
             historyData.forEach((entry) => {
