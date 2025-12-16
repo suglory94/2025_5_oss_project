@@ -223,7 +223,7 @@
             document.getElementById('historyList').innerHTML = '<p style="text-align: center; color: #8b5cf6;">기록을 불러오는 중...</p>';
 
             try {
-                const response = await fetch(`http://localhost:3000/api/hourly/history`);
+                const response = await fetch(`/api/hourly/history`);
                 const data = await response.json();
 
                 if (response.status === 200) {
@@ -383,7 +383,7 @@
 
             // 백엔드 API 호출
             try {
-                const response = await fetch(`http://localhost:3000/api/hourly/settings`, {
+                const response = await fetch(`/api/hourly/settings`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -417,7 +417,7 @@
             document.getElementById('choiceScreen').style.display = 'flex';
 
             try {
-                const response = await fetch(`http://localhost:3000/api/hourly/question`, {
+                const response = await fetch(`/api/hourly/question`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -581,7 +581,7 @@
 
         // 2단계 질문
         async function fetchBranchQuestion(day, hour, subject, baseChoice) {
-            const response = await fetch(`http://localhost:3000/api/hourly/branch-question`, {
+            const response = await fetch(`/api/hourly/branch-question`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -697,7 +697,7 @@
 
             // 백엔드 API 호출
             try {
-                const response = await fetch(`http://localhost:3000/api/hourly/choices`, {
+                const response = await fetch(`/api/hourly/choices`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -747,7 +747,7 @@
 
         async function loadSavedTimetable() {
             try {
-                const response = await fetch(`http://localhost:3000/api/hourly/settings`);
+                const response = await fetch(`/api/hourly/settings`);
 
                 if (response.status === 200) {
                     const data = await response.json();
@@ -790,7 +790,7 @@
             if (!confirmed) return;
 
             try {
-                const response = await fetch(`http://localhost:3000/api/hourly/reset`, {
+                const response = await fetch(`/api/hourly/reset`, {
                     method: 'DELETE'
                 });
 

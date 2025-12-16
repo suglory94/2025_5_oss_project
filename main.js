@@ -1,6 +1,9 @@
 const express = require("express");
 const dbConnect = require("./config/dbConnect");
 
+const { createServer } = require('node:http');
+const { Server } = require('socket.io');
+
 require('dotenv').config();
 
 const app = express();
@@ -14,7 +17,7 @@ dbConnect();
 app.use(express.static(path.join(__dirname)));
 
 app.get("/", (req, res) => {
-    res.send(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.use("/api/hourly", require("./routes/hourlyRoutes"));
