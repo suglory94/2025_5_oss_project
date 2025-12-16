@@ -151,7 +151,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
 
             // AI 모듈 import
             const { choiceForfreetime } = require('../ai/choiceByai');
-            
+
             // AI에게 선택지 요청
             const aiChoices = await choiceForfreetime({
                 rawStats: rawStats,
@@ -171,10 +171,10 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
                         let costPrompt = null;
 
                         // AI가 생성한 label을 분석해서 알바/수입 관련인지 확인
-                        const isIncomeActivity = c.label.includes('알바') || 
-                                                c.label.includes('아르바이트') || 
-                                                c.label.includes('일') ||
-                                                c.label.includes('벌');
+                        const isIncomeActivity = c.label.includes('알바') ||
+                            c.label.includes('아르바이트') ||
+                            c.label.includes('일') ||
+                            c.label.includes('벌');
 
                         switch (c.category) {
                             case 'study':
@@ -191,7 +191,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
                                 if (isIncomeActivity) {
                                     costPrompt = "얼마를 벌었나요? (양수로 입력, 예: 5000)";
                                 } else {
-                                    costPrompt = "얼마를 썼나요? (음수로 입력, 예: -5000)";
+                                    costPrompt = "얼마를 썼나요? (양수로 입력, 예: 5000)";
                                 }
                                 break;
                         }
@@ -227,7 +227,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
             ]
         });
     }
-    
+
     // 5. 모든 조건에 해당하지 않는 경우 (예: 주말, 새벽 7시 등)
     return res.status(200).json({
         day: currentDay,

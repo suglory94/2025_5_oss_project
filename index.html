@@ -183,6 +183,9 @@
             </div>
         </div>
 
+        <div id="three-container" style="width:1000px;height:1200px;margin:20px auto;">
+        </div>
+
     </div>
 
     <script>
@@ -207,17 +210,17 @@
             6: { start: "16:30", end: "17:45" }
         };
 
-        // 메인 화면으로 돌아가기
-        function goBackToHome() {
-            document.getElementById('choiceScreen').style.display = 'none';
-            document.getElementById('timetableScreen').style.display = 'none';
-            document.getElementById('homeScreen').style.display = 'flex'; // 메인 화면이 flex로 가정
-        }
-
         // 히스토리 버튼
         async function showHistory() {
+            const container = document.getElementById('three-container');
+            if (container) container.style.display = 'block';
+
             document.getElementById('homeScreen').style.display = 'none';
             document.getElementById('historyScreen').style.display = 'flex';
+
+            if (window.initCharacter3D) {
+                window.initCharacter3D();
+            }
             document.getElementById('historyList').innerHTML = '<p style="text-align: center; color: #8b5cf6;">기록을 불러오는 중...</p>';
 
             try {
@@ -738,6 +741,9 @@
             document.getElementById('timetableScreen').style.display = 'none';
             document.getElementById('historyScreen').style.display = 'none';
             document.getElementById('homeScreen').style.display = 'flex';
+
+            const container = document.getElementById('three-container');
+            if (container) container.style.display = 'none';
         }
 
         async function loadSavedTimetable() {
@@ -805,53 +811,7 @@
             }
         }
 
-        // 히스토리 버튼
-        async function showHistory() {
-            document.getElementById('homeScreen').style.display = 'none';
-            document.getElementById('historyScreen').style.display = 'flex';
-            document.getElementById('historyList').innerHTML = '<p style="text-align: center; color: #8b5cf6;">기록을 불러오는 중...</p>';
 
-            try {
-                const response = await fetch(`http://localhost:3000/api/hourly/history`);
-                const data = await response.json();
-
-                if (response.status === 200) {
-                    const actual = data.actual_universe || [];
-                    const parallel = data.parallel_universe || [];
-
-                    const historyMap = new Map();
-
-                    // 1. 실제 우주 데이터 추가
-                    actual.forEach(choice => {
-                        const key = `${choice.day}-${choice.hour}`;
-                        historyMap.set(key, { actual: choice, parallels: [] });
-                    });
-
-                    // 2. 평행 우주 데이터 연결
-                    parallel.forEach(branch => {
-                        const key = `${branch.day}-${branch.hour}`;
-                        if (historyMap.has(key)) {
-                            historyMap.get(key).parallels.push(branch);
-                        }
-                    });
-
-                    // 3. 시간 순서대로 정렬 (Day 0-11, Hour 0-23)
-                    const mergedData = Array.from(historyMap.values()).sort((a, b) => {
-                        if (a.actual.day !== b.actual.day) {
-                            return a.actual.day - b.actual.day;
-                        }
-                        return a.actual.hour - b.actual.hour;
-                    });
-
-                    renderHistoryList(mergedData);
-                } else {
-                    document.getElementById('historyList').innerHTML = `<p style="color: red; text-align: center;">히스토리 불러오기 오류: ${data.message || '알 수 없는 오류'}</p>`;
-                }
-            } catch (error) {
-                console.error('히스토리 불러오기 중 오류: ', error);
-                document.getElementById('historyList').innerHTML = `<p style="color: red; text-align: center;">서버와 통신 오류가 발생했습니다.</p>`;
-            }
-        }
 
         // 부호에 따라 색상 지정
         function formatChange(value, unit) {
@@ -931,6 +891,24 @@
                 listContainer.insertAdjacentHTML('beforeend', itemHtml);
             });
         }
+
+    </script>
+    <script type="module">
+        import {
+            initThreeScene,
+            updateStudy,
+            updateSleep,
+            updateFinanceStatus
+        } from "./threeScene.js";
+
+        window.initCharacter3D = initThreeScene;
+
+        // 전역으로 노출 (기존 script에서 쓰기 위해)
+        window.updateCharacter = {
+            updateStudy,
+            updateSleep,
+            updateFinanceStatus
+        };
     </script>
 </body>
 
