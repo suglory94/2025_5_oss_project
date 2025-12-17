@@ -368,17 +368,33 @@
                 throw new Error('User ID not set');
             }
 
-            // GET 요청은 query parameter로 추가
-            if (!options.method || options.method === 'GET') {
+            // GET과 DELETE 요청은 query parameter로 추가
+            if (!options.method || options.method === 'GET' || options.method === 'DELETE') {
                 const separator = url.includes('?') ? '&' : '?';
                 url = `${url}${separator}userId=${encodeURIComponent(currentUserId)}`;
             }
-            // POST/PUT/DELETE 요청은 body에 추가
+            // POST/PUT 요청은 body에 추가
             else {
                 if (options.body) {
-                    const bodyData = JSON.parse(options.body);
+                    // body가 이미 JSON 문자열인 경우 파싱
+                    let bodyData;
+                    try {
+                        bodyData = typeof options.body === 'string'
+                            ? JSON.parse(options.body)
+                            : options.body;
+                    } catch (e) {
+                        console.error('Body parsing error:', e);
+                        bodyData = {};
+                    }
+
                     bodyData.userId = currentUserId;
                     options.body = JSON.stringify(bodyData);
+
+                    // headers가 없으면 추가
+                    if (!options.headers) {
+                        options.headers = {};
+                    }
+                    options.headers['Content-Type'] = 'application/json';
                 } else {
                     options.body = JSON.stringify({ userId: currentUserId });
                     options.headers = { 'Content-Type': 'application/json', ...options.headers };
@@ -832,7 +848,9 @@
                 const branchData = await response.json();
                 updateQuestionUI(branchData);
             } else {
-                alert("2단계 질문을 가져오는 데 실패했습니다.");
+                const errorData = await response.json().catch(() => ({ message: '알 수 없는 오류' }));
+                console.error('2단계 질문 오류:', errorData);
+                alert(`2단계 질문을 가져오는 데 실패했습니다: ${errorData.message}`);
             }
         }
 
