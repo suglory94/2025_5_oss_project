@@ -21,7 +21,7 @@ body {
 }
 
 /* =========================
-   배경 애니메이션
+배경 애니메이션
 ========================= */
 .background-effects {
     position: absolute;
@@ -68,7 +68,7 @@ body {
 }
 
 /* =========================
-   메인 콘텐츠
+메인 콘텐츠
 ========================= */
 .content {
     position: relative;
@@ -102,6 +102,52 @@ body {
     }
 }
 
+/* 사용자 ID 입력 영역 */
+.user-id-section {
+    margin-bottom: 3rem;
+    background: rgba(139, 92, 246, 0.1);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 15px;
+    padding: 25px 35px;
+    backdrop-filter: blur(10px);
+}
+
+.user-id-label {
+    font-size: 1.2rem;
+    color: #a78bfa;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.user-id-input {
+    width: 100%;
+    max-width: 320px;
+    padding: 14px 20px;
+    font-size: 1.1rem;
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    color: #f0f0f5;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.user-id-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+}
+
+.user-id-input::placeholder {
+    color: rgba(240, 240, 245, 0.4);
+}
+
+.current-user-display {
+    margin-top: 10px;
+    font-size: 0.95rem;
+    color: #6ee7b7;
+}
+
 /* =========================
    버튼 그룹
 ========================= */
@@ -127,6 +173,11 @@ body {
     justify-content: center;
     gap: 0.5rem;
     transition: all 0.3s ease;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .icon {
@@ -160,6 +211,17 @@ body {
 .btn-primary:hover {
     transform: scale(1.05);
     box-shadow: 0 15px 30px rgba(139, 92, 246, 0.6);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 15px 30px rgba(139, 92, 246, 0.6);
+}
+
+@media (min-width: 640px) {
+    .button-group {
+        flex-direction: row;
+    }
 }
 
 /* =========================
