@@ -14,71 +14,109 @@ const getWeeklyHistory = asyncHandler(async (req, res) => {
     });
 });
 
-// 상태 변화 계산 함수
-const calculateStateChanges = (choiceType, choice, cost, duration = 75) => {
+// 상태 변화 계산 함수 (카테고리 필드 사용)
+const calculateStateChanges = (choiceType, choice, cost, duration = 75, category = null) => {
     let financeChange = 0;
     let sleepChangeMinutes = 0;
     let studyChangeMinutes = 0;
 
-    // 1. 재정 변화는 입력된 cost를 사용
-    financeChange -= cost;
+    // 1. 재정 변화 계산
+    const isIncome = 
+        choice.includes('part_time') || 
+        choice.includes('알바') ||
+        choice.includes('아르바이트') ||
+        choice.includes('근무') ||
+        choice.includes('벌');
+    
+    if (isIncome) {
+        financeChange = Math.abs(cost); // 수입은 양수
+    } else {
+        financeChange = -Math.abs(cost); // 지출은 음수
+    }
 
-    // 2. 학습/수면 시간 변화 (임의의 로직 적용)
+    // 2. 학습/수면 시간 변화
     switch (choiceType) {
         case 'class':
             switch (choice) {
                 case 'attend':
                 case 'attend_coffee':
-                    studyChangeMinutes += duration; // 수업 시간만큼 학습 시간 증가
+                    studyChangeMinutes += duration;
                     break;
                 case 'skip_sleep':
-                    sleepChangeMinutes += duration; // 수업 시간만큼 수면 시간 증가
+                    sleepChangeMinutes += duration;
                     break;
                 case 'skip_play':
-                    studyChangeMinutes -= duration; // 수업을 안 들었으니 약간의 패널티
+                    studyChangeMinutes -= duration;
                     break;
             }
             break;
+
         case 'sleep':
             switch (choice) {
                 case 'sleep':
-                    sleepChangeMinutes += duration; // 수면 시간 증가
-                    break;
-                case 'stay_up':
-                    studyChangeMinutes += duration; // 밤샘 공부 시간만큼 학습 시간 증가
-                    sleepChangeMinutes -= duration; // 수면 시간 감소
-                    break;
-                case 'stay_up_play':
-                    studyChangeMinutes -= duration; // 놀았으니 학습 패널티
-                    sleepChangeMinutes -= duration; // 수면 시간 감소
-                    break;
-            }
-            break;
-        case 'ai_branch':
-        case 'free_time':
-            // AI 또는 자유 시간 선택의 경우
-            switch (choice) {
-                case 'study':
-                case 'choice_A': // 선택 A, B가 공부/수면/재정 중 하나에 기여한다고 가정
-                    studyChangeMinutes += duration;
-                    break;
-                case 'sleep':
-                case 'choice_B': // 평행 선택
                     sleepChangeMinutes += duration;
                     break;
-                case 'rest':
-                    sleepChangeMinutes += duration / 2; // 휴식은 수면 시간의 절반 정도 기여
+                case 'stay_up':
+                    studyChangeMinutes += duration;
+                    sleepChangeMinutes -= duration;
                     break;
-                case 'part_time':
-                    // 재정 변화는 cost로 이미 반영됨
+                case 'stay_up_play':
+                    studyChangeMinutes -= duration;
+                    sleepChangeMinutes -= duration;
                     break;
-                // 기타 선택지에 따른 추가 로직...
             }
             break;
-        // meal이나 기타 선택지는 큰 변화가 없다고 가정
+
+        case 'ai_branch':
+        case 'free_time':
+            // ✅ 1. 먼저 category 필드 확인 (AI 선택지의 경우)
+            if (category) {
+                switch (category) {
+                    case 'study':
+                    case 'grade':
+                        studyChangeMinutes += duration;
+                        break;
+                    case 'sleep':
+                        sleepChangeMinutes += duration;
+                        break;
+                    case 'finance':
+                        // 재정은 이미 위에서 처리됨
+                        break;
+                }
+            } 
+            // ✅ 2. category가 없으면 텍스트 기반 판단 (fallback)
+            else if (choice.includes('공부') || choice.includes('study') || choice.includes('학습')) {
+                studyChangeMinutes += duration;
+            } else if (choice.includes('자') || choice.includes('sleep') || choice.includes('수면') || choice.includes('낮잠')) {
+                sleepChangeMinutes += duration;
+            } else if (choice.includes('휴식') || choice.includes('rest')) {
+                sleepChangeMinutes += duration / 2;
+            } else if (choice.includes('운동') || choice.includes('exercise')) {
+                sleepChangeMinutes += duration / 3;
+            }
+            break;
+
+        case 'meal':
+            // 식사는 재정 변화만 있음
+            break;
+
+        case 'exercise':
+            sleepChangeMinutes += duration / 3;
+            break;
+
+        case 'hobby':
+            // 취미활동은 주로 재정 변화만
+            break;
+
+        case 'rest':
+            sleepChangeMinutes += duration / 2;
+            break;
+
+        case 'study':
+            studyChangeMinutes += duration;
+            break;
     }
 
-    // 시간당 획득/손실 점수를 간단하게 분 단위로 반영
     return {
         financeChange,
         sleepChangeMinutes,

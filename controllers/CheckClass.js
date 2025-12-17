@@ -48,70 +48,64 @@ const checkClassStatusFromArray = (timetableArray, dayIndex, period) => {
     return false;
 };
 
-// 가장 가까운 수업 찾기
+// 가장 가까운 "교시" 찾기 (반환 형식은 동일)
 const findNextClassDetails = (scheduleDoc) => {
     const now = new Date();
-    const currentDayJsIndex = now.getDay();
+    const currentDayJsIndex = now.getDay(); // 0~6 (일~토)
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
+    // 월~금만 처리
     let currentDayDbIndex = -1;
     if (currentDayJsIndex >= 1 && currentDayJsIndex <= 5) {
         currentDayDbIndex = currentDayJsIndex - 1;
     }
-
     if (currentDayDbIndex === -1) {
         return null;
     }
 
-    let minTimeDiffMs = Infinity;
-    let nextClassDetails = null;
+    let targetDay = currentDayDbIndex;
+    let targetPeriod = null;
 
-    for (let d = 0; d < 5; d++) {
-        const checkDayDbIndex = d;
-        const checkDayName = DAYS[checkDayDbIndex];
-
-        const isToday = (checkDayDbIndex === currentDayDbIndex);
-        const startMinuteCheck = isToday ? currentMinutes : timeToMinutes("08:59");
-
-        const classesOnDay = scheduleDoc[checkDayName] || [];
-
-        for (let period = 1; period <= 6; period++) {
-            const periodTimes = PERIOD_TIMES[period];
-            const startMinutes = timeToMinutes(periodTimes.start);
-
-            const currentClass = classesOnDay.find(cls => {
-                const classStartMinutes = timeToMinutes(cls.start);
-                return classStartMinutes === startMinutes;
-            });
-
-            if (!currentClass) continue;
-
-            // 수업 날짜 계산
-            let classDate = new Date(now);
-
-            let daysToAdd = checkDayDbIndex - currentDayDbIndex;
-            if (daysToAdd < 0) daysToAdd += 5;
-
-            classDate.setDate(now.getDate() + daysToAdd);
-            classDate.setHours(Math.floor(startMinutes / 60), startMinutes % 60, 0, 0);
-
-            const timeDiffMs = classDate.getTime() - now.getTime();
-
-            if (timeDiffMs > 0 && timeDiffMs < minTimeDiffMs) {
-                minTimeDiffMs = timeDiffMs;
-                nextClassDetails = {
-                    day: checkDayDbIndex,
-                    hour: Math.floor(startMinutes / 60),
-                    minute: startMinutes % 60,
-                    subject: currentClass.subject,
-                    period: period
-                };
-            }
+    // 오늘 기준 "다음 교시" 찾기 (현재 교시는 제외)
+    for (const [period, times] of Object.entries(PERIOD_TIMES)) {
+        const startMinutes = timeToMinutes(times.start);
+        if (startMinutes > currentMinutes) {
+            targetPeriod = Number(period);
+            break;
         }
     }
 
-    return nextClassDetails;
-}
+    // 오늘 남은 교시가 없으면 → 다음 날 1교시
+    if (targetPeriod === null) {
+        targetPeriod = 1;
+        targetDay += 1;
+
+        // 금요일 → 월요일
+        if (targetDay > 4) {
+            targetDay = 0;
+        }
+    }
+
+    const periodTimes = PERIOD_TIMES[targetPeriod];
+    const startMinutes = timeToMinutes(periodTimes.start);
+
+    // 3️⃣ 해당 교시에 수업이 있는지 확인
+    const dayName = DAYS[targetDay];
+    const classesOnDay = scheduleDoc[dayName] || [];
+
+    const classDetail = classesOnDay.find(cls =>
+        timeToMinutes(cls.start) === startMinutes
+    );
+
+    return {
+        day: targetDay,
+        hour: Math.floor(startMinutes / 60),
+        minute: startMinutes % 60,
+        subject: classDetail ? classDetail.subject : null,
+        period: targetPeriod
+    };
+};
+
 
 module.exports = {
     findNextClassDetails,

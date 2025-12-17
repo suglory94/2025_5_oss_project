@@ -2,8 +2,6 @@ const express = require("express");
 const dbConnect = require("./config/dbConnect");
 
 const { createServer } = require('node:http');
-const { Server } = require('socket.io');
-
 require('dotenv').config();
 
 const app = express();

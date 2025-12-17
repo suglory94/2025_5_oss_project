@@ -176,6 +176,74 @@
                     돌아가기
                 </button>
             </div>
+            
+
+
+
+<!-- ✅ 누적 점수 요약 섹션 추가 -->
+<div id="totalScoresSummary" style="margin: 20px 0; padding: 25px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%); border-radius: 15px; border: 2px solid rgba(139, 92, 246, 0.3);">
+    <h3 style="color: #8b5cf6; margin-bottom: 20px; font-size: 1.3rem; text-align: center;">📊 누적 점수 요약</h3>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <!-- 나의 우주 -->
+        <div style="padding: 20px; background: rgba(139, 92, 246, 0.15); border-radius: 12px; border: 2px solid rgba(139, 92, 246, 0.4);">
+            <h4 style="color: #a78bfa; margin-bottom: 15px; font-size: 1.1rem; text-align: center;">✨ 나의 우주</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 8px;">
+                    <span style="font-weight: 600;">💰 재정:</span>
+                    <span id="myTotalFinance" style="font-size: 1.2rem; font-weight: bold; color: #6ee7b7;">+0원</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 8px;">
+                    <span style="font-weight: 600;">📚 학습:</span>
+                    <span id="myTotalStudy" style="font-size: 1.2rem; font-weight: bold; color: #6ee7b7;">+0분</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 8px;">
+                    <span style="font-weight: 600;">😴 수면:</span>
+                    <span id="myTotalSleep" style="font-size: 1.2rem; font-weight: bold; color: #6ee7b7;">+0분</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 평행 우주 -->
+        <div style="padding: 20px; background: rgba(245, 158, 11, 0.15); border-radius: 12px; border: 2px solid rgba(245, 158, 11, 0.4);">
+            <h4 style="color: #fbbf24; margin-bottom: 15px; font-size: 1.1rem; text-align: center;">🌌 평행 우주</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 8px;">
+                    <span style="font-weight: 600;">💰 재정:</span>
+                    <span id="parallelTotalFinance" style="font-size: 1.2rem; font-weight: bold; color: #fbbf24;">+0원</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 8px;">
+                    <span style="font-weight: 600;">📚 학습:</span>
+                    <span id="parallelTotalStudy" style="font-size: 1.2rem; font-weight: bold; color: #fbbf24;">+0분</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 8px;">
+                    <span style="font-weight: 600;">😴 수면:</span>
+                    <span id="parallelTotalSleep" style="font-size: 1.2rem; font-weight: bold; color: #fbbf24;">+0분</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 차이 비교 -->
+    <div style="margin-top: 20px; padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 10px;">
+        <h4 style="color: #c084fc; margin-bottom: 10px; font-size: 1rem; text-align: center;">🔄 차이 분석</h4>
+        <div style="display: flex; justify-content: space-around; font-size: 0.95rem;">
+            <div style="text-align: center;">
+                <div style="color: #a78bfa;">💰 재정 차이</div>
+                <div id="financeDiff" style="font-weight: bold; font-size: 1.1rem; margin-top: 5px;">0원</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="color: #a78bfa;">📚 학습 차이</div>
+                <div id="studyDiff" style="font-weight: bold; font-size: 1.1rem; margin-top: 5px;">0분</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="color: #a78bfa;">😴 수면 차이</div>
+                <div id="sleepDiff" style="font-weight: bold; font-size: 1.1rem; margin-top: 5px;">0분</div>
+            </div>
+        </div>
+    </div>
+</div>
+
             <!-- 리스트 영역 -->
             <div id="historyList" class="history-list">
                 <p style="text-align: center; color: #aaa;">기록을 불러오는 중...</p>
@@ -209,58 +277,157 @@
             6: { start: "16:30", end: "17:45" }
         };
 
-        // 히스토리 버튼
         async function showHistory() {
-            const container = document.getElementById('three-container');
-            if (container) container.style.display = 'block';
+    const container = document.getElementById('three-container');
+    if (container) container.style.display = 'block';
 
-            document.getElementById('homeScreen').style.display = 'none';
-            document.getElementById('historyScreen').style.display = 'flex';
+    document.getElementById('homeScreen').style.display = 'none';
+    document.getElementById('historyScreen').style.display = 'flex';
 
-            if (window.initCharacter3D) {
-                window.initCharacter3D();
-            }
-            document.getElementById('historyList').innerHTML = '<p style="text-align: center; color: #8b5cf6;">기록을 불러오는 중...</p>';
+    if (window.initCharacter3D) {
+        window.initCharacter3D();
+    }
 
-            try {
-                const response = await fetch(`/api/hourly/history`);
-                const data = await response.json();
+    try {
+        // 히스토리 데이터 로드
+        const response = await fetch('/api/hourly/history');
+        const result = await response.json();
 
-                if (response.status === 200) {
-                    const actual = data.actual_universe || [];
-                    const parallel = data.parallel_universe || [];
+        // ✅ 점수 데이터 로드
+        const statsResponse = await fetch('/api/hourly/raw-stats');
+        const stats = await statsResponse.json();
 
-                    const historyMap = new Map();
-
-                    actual.forEach(choice => {
-                        const key = `${choice.day}-${choice.hour}`;
-                        historyMap.set(key, { actual: choice, parallels: [] });
-                    });
-
-                    parallel.forEach(branch => {
-                        const key = `${branch.day}-${branch.hour}`;
-                        if (historyMap.has(key)) {
-                            historyMap.get(key).parallels.push(branch);
-                        }
-                    });
-
-                    const mergedData = Array.from(historyMap.values()).sort((a, b) => {
-                        if (a.actual.day !== b.actual.day) {
-                            return a.actual.day - b.actual.day;
-                        }
-                        return a.actual.hour - b.actual.hour;
-                    });
-
-                    renderHistoryList(mergedData);
-                } else {
-                    document.getElementById('historyList').innerHTML = `<p style="color: red; text-align: center;">오류: ${data.message}</p>`;
-                }
-            } catch (error) {
-                console.error('히스토리 오류:', error);
-                document.getElementById('historyList').innerHTML = `<p style="color: red; text-align: center;">통신 오류</p>`;
-            }
+        // 점수 업데이트
+        if (window.updateCharacter) {
+            window.updateCharacter.updateFinanceStatus(stats.finance);
+            window.updateCharacter.updateStudy(stats.grade);
+            window.updateCharacter.updateSleep(stats.sleep);
         }
 
+        // ✅ 누적 점수 계산 및 표시
+        calculateAndDisplayTotalScores(result);
+
+        // 히스토리 포맷팅 및 렌더링
+        const formattedHistory = formatHistoryData(result);
+        renderHistoryList(formattedHistory);
+
+    } catch (error) {
+        console.error('히스토리 로드 오류:', error);
+        alert('히스토리를 불러올 수 없습니다.');
+    }
+}
+        function calculateAndDisplayTotalScores(historyData) {
+    // 나의 우주 누적 점수
+    let myTotalFinance = 0;
+    let myTotalStudy = 0;
+    let myTotalSleep = 0;
+
+    // 평행 우주 누적 점수
+    let parallelTotalFinance = 0;
+    let parallelTotalStudy = 0;
+    let parallelTotalSleep = 0;
+
+    // 나의 우주 계산
+    if (historyData.actual_universe && Array.isArray(historyData.actual_universe)) {
+        historyData.actual_universe.forEach(choice => {
+            myTotalFinance += choice.financeChange || 0;
+            myTotalStudy += choice.studyChangeMinutes || 0;
+            myTotalSleep += choice.sleepChangeMinutes || 0;
+        });
+    }
+
+    // 평행 우주 계산
+    if (historyData.parallel_universe && Array.isArray(historyData.parallel_universe)) {
+        historyData.parallel_universe.forEach(branch => {
+            parallelTotalFinance += branch.oppositeFinanceChange || 0;
+            parallelTotalStudy += branch.oppositeStudyChangeMinutes || 0;
+            parallelTotalSleep += branch.oppositeSleepChangeMinutes || 0;
+        });
+    }
+
+    // 차이 계산
+    const financeDiff = myTotalFinance - parallelTotalFinance;
+    const studyDiff = myTotalStudy - parallelTotalStudy;
+    const sleepDiff = myTotalSleep - parallelTotalSleep;
+
+    // ✅ 화면에 표시
+    updateTotalScoreDisplay('myTotalFinance', myTotalFinance, '원');
+    updateTotalScoreDisplay('myTotalStudy', myTotalStudy, '분');
+    updateTotalScoreDisplay('myTotalSleep', myTotalSleep, '분');
+
+    updateTotalScoreDisplay('parallelTotalFinance', parallelTotalFinance, '원');
+    updateTotalScoreDisplay('parallelTotalStudy', parallelTotalStudy, '분');
+    updateTotalScoreDisplay('parallelTotalSleep', parallelTotalSleep, '분');
+
+    updateDiffDisplay('financeDiff', financeDiff, '원');
+    updateDiffDisplay('studyDiff', studyDiff, '분');
+    updateDiffDisplay('sleepDiff', sleepDiff, '분');
+
+    console.log('📊 누적 점수:', {
+        my: { finance: myTotalFinance, study: myTotalStudy, sleep: myTotalSleep },
+        parallel: { finance: parallelTotalFinance, study: parallelTotalStudy, sleep: parallelTotalSleep },
+        diff: { finance: financeDiff, study: studyDiff, sleep: sleepDiff }
+    });
+}
+
+// ✅ 헬퍼 함수: 점수 표시 업데이트
+function updateTotalScoreDisplay(elementId, value, unit) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    const formattedValue = value.toLocaleString();
+    
+    if (value > 0) {
+        element.textContent = `+${formattedValue}${unit}`;
+        element.style.color = '#6ee7b7'; // 초록색
+    } else if (value < 0) {
+        element.textContent = `${formattedValue}${unit}`;
+        element.style.color = '#fca5a5'; // 빨간색
+    } else {
+        element.textContent = `0${unit}`;
+        element.style.color = '#9ca3af'; // 회색
+    }
+}
+
+// 헬퍼 함수: 차이 표시 업데이트
+function updateDiffDisplay(elementId, diff, unit) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    const formattedDiff = Math.abs(diff).toLocaleString();
+    
+    if (diff > 0) {
+        element.textContent = `+${formattedDiff}${unit}`;
+        element.style.color = '#6ee7b7'; // 초록색 (나의 우주가 더 좋음)
+    } else if (diff < 0) {
+        element.textContent = `-${formattedDiff}${unit}`;
+        element.style.color = '#fca5a5'; // 빨간색 (평행 우주가 더 좋음)
+    } else {
+        element.textContent = `0${unit}`;
+        element.style.color = '#9ca3af'; // 회색 (동일)
+    }
+}
+        // formatHistoryData 함수 추가
+function formatHistoryData(result) {
+    const actualUniverse = result.actual_universe || [];
+    const parallelUniverse = result.parallel_universe || [];
+
+    // day와 hour 기준으로 그룹핑
+    const grouped = [];
+
+    actualUniverse.forEach(actual => {
+        const parallels = parallelUniverse.filter(
+            p => p.day === actual.day && p.hour === actual.hour
+        );
+
+        grouped.push({
+            actual: actual,
+            parallels: parallels
+        });
+    });
+
+    return grouped;
+}
         // 시간표 버튼
         async function showTimetableScreen() {
             document.getElementById('homeScreen').style.display = 'none';
@@ -441,6 +608,7 @@
 
         // 선택 화면 렌더링
         function renderChoiceScreen(data) {
+            allFinalOptions = data.options;
             // 1. data 유효성 검사 강화
             if (!data) {
                 alert("데이터를 불러오지 못했습니다.");
@@ -602,6 +770,7 @@
         // 2단계 UI 업데이트
         function updateQuestionUI(data) {
             currentQuestionData = data;
+            allFinalOptions = data.options;
 
             // 질문 텍스트 업데이트
             document.getElementById('choice-question').textContent = data.question;
@@ -641,83 +810,108 @@
             document.getElementById('save-choice-btn').style.display = 'none';
         }
 
-        // 평행우주 데이터 전송
-        document.getElementById('activity-choice-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
+       
 
-            if (!selectedChoice) {
-                alert('선택지를 선택해주세요!');
-                return;
-            }
+// 평행우주 데이터 전송
+document.getElementById('activity-choice-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-            const cost = parseInt(document.getElementById('cost-value').value, 10);
-            const selectedOptionElement = document.querySelector(`#choice-options-container .choice-item[data-value="${selectedChoice}"]`);
+    if (!selectedChoice) {
+        alert('선택지를 선택해주세요!');
+        return;
+    }
 
-            let customDescription = '';
-            if (selectedOptionElement && selectedOptionElement.dataset.needsDescription === 'true') {
-                customDescription = document.getElementById('custom-description').value.trim();
-                if (!customDescription) {
-                    alert("활동 설명을 입력해주세요.");
-                    return;
-                }
-            }
+    const cost = parseInt(document.getElementById('cost-value').value, 10);
+    const selectedOptionElement = document.querySelector(`#choice-options-container .choice-item[data-value="${selectedChoice}"]`);
 
-            if (selectedOptionElement && selectedOptionElement.dataset.hasCost === 'true' && isNaN(cost)) {
-                alert("유효한 비용을 입력해주세요.");
-                return;
-            }
+    let customDescription = '';
+    if (selectedOptionElement && selectedOptionElement.dataset.needsDescription === 'true') {
+        customDescription = document.getElementById('custom-description').value.trim();
+        if (!customDescription) {
+            alert("활동 설명을 입력해주세요.");
+            return;
+        }
+    }
 
-            const parallelChoicesPayload = allFinalOptions
-                .filter(option => option.value !== selectedChoice)
-                .map(option => {
-                    let oppositeCost = 0;
-                    if (option.value === 'attend_coffee') oppositeCost = -4000;
-                    if (option.value === 'skip_play') oppositeCost = -10000;
+    if (selectedOptionElement && selectedOptionElement.dataset.hasCost === 'true' && isNaN(cost)) {
+        alert("유효한 비용을 입력해주세요.");
+        return;
+    }
 
-                    return {
-                        value: option.value,
-                        cost: oppositeCost,
-                        label: option.label,
-                    };
-                });
+    // ✅ 1. 선택한 옵션의 category 찾기
+    const selectedOption = allFinalOptions.find(opt => opt.value === selectedChoice);
+    const selectedCategory = selectedOption ? selectedOption.category : null;
+    
+    console.log('✅ 선택한 옵션:', selectedOption);
+    console.log('✅ 선택한 category:', selectedCategory);
 
-            // 백엔드로 보낼 데이터
-            const payload = {
-                day: currentQuestionData.day,
-                hour: currentQuestionData.hour,
-                choiceType: currentQuestionData.choiceType,
-                subject: currentQuestionData.subject,
+    // ✅ 2. parallelChoices에 category 포함
+    const parallelChoicesPayload = allFinalOptions
+        .filter(option => option.value !== selectedChoice)
+        .map(option => {
+            let oppositeCost = 0;
+            if (option.value === 'attend_coffee') oppositeCost = -4000;
+            if (option.value === 'skip_play') oppositeCost = -10000;
 
-                choice: selectedChoice,
-                cost: cost,
-                duration: 75,
-                customDescription: document.getElementById('custom-description').value.trim() || undefined,
-                parallelChoices: window.currentParallelChoices || [],
+            return {
+                value: option.value,
+                cost: oppositeCost,
+                label: option.label,
+                category: option.category || null  // ✅ category 추가
             };
-
-            // 백엔드 API 호출
-            try {
-                const response = await fetch(`/api/hourly/choices`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await response.json();
-
-                if (response.status === 201) {
-                    alert(`활동 저장 완료!\n[나의 우주] ${data.actual_universe.description}\n[평행 우주] ${data.parallel_universe.description}\n현재 예산: ${data.actual_universe.currentBudget.toLocaleString()}원`);
-                    goBackToHome();
-                } else {
-                    alert(`활동 저장 오류: ${data.message || '알 수 없는 오류'}`);
-                }
-            } catch (error) {
-                console.error('활동 저장 오류:', error);
-                alert('서버 통신 오류가 발생했습니다.');
-            }
         });
+
+    // ✅ 3. payload에 category 포함
+    const payload = {
+        day: currentQuestionData.day,
+        hour: currentQuestionData.hour,
+        choiceType: currentQuestionData.choiceType,
+        subject: currentQuestionData.subject,
+
+        choice: selectedChoice,
+        cost: cost,
+        duration: 75,
+        customDescription: document.getElementById('custom-description').value.trim() || undefined,
+        parallelChoices: parallelChoicesPayload,
+        category: selectedCategory  // ✅ category 추가
+    };
+
+    console.log('📤 백엔드로 보내는 데이터:', payload);
+
+    // 백엔드 API 호출
+    try {
+        const response = await fetch(`/api/hourly/choices`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (response.status === 201) {
+            console.log('✅ 서버 응답:', data);
+            
+            // 점수 즉시 업데이트
+            if (data.currentScores && window.updateCharacter) {
+                window.updateCharacter.updateFinanceStatus(data.currentScores.finance);
+                window.updateCharacter.updateStudy(data.currentScores.study);
+                window.updateCharacter.updateSleep(data.currentScores.sleep);
+            }
+
+            alert(`✅ 활동 저장 완료!\n\n현재 예산: ${data.actual_universe.currentBudget.toLocaleString()}원`);
+            
+            // 히스토리로 이동
+            showHistory();
+        } else {
+            alert(`❌ 활동 저장 오류: ${data.message || '알 수 없는 오류'}`);
+        }
+    } catch (error) {
+        console.error('활동 저장 오류:', error);
+        alert('서버 통신 오류가 발생했습니다.');
+    }
+});
 
         // 엔터 키 입력 시 시간표 모달 저장
         document.addEventListener('DOMContentLoaded', function () {
