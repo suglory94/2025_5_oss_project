@@ -3,16 +3,17 @@ const UserSettings = require("../models/userSettingsModel");
 const HourlyChoice = require("../models/hourlyChoiceModel");
 const Schedule = require("../models/scheduleModel");
 
-// 값 상태 (재정, 수면 시간, 학습 시간)
-const getRawStatsInternal = async () => {
-    const settings = await UserSettings.findOne();
-    const choices = await HourlyChoice.find().sort({ day: 1, hour: 1 });
-    const scheduleDoc = await Schedule.findOne();
+// 값 상태 (재정, 수면 시간, 학습 시간) - 사용자별
+const getRawStatsInternal = async (userId) => {
+    if (!userId) return null;
+
+    const settings = await UserSettings.findOne({ userId });
+    const choices = await HourlyChoice.find({ userId }).sort({ day: 1, hour: 1 });
+    const scheduleDoc = await Schedule.findOne({ userId });
 
     if (!settings || !scheduleDoc) return null;
 
     const now = new Date();
-    // weekStartData -> weekStartDate 수정
     const daysPassed = Math.ceil(
         (now.getTime() - settings.weekStartDate.getTime()) / (1000 * 60 * 60 * 24)
     ) || 1;
@@ -66,16 +67,22 @@ const getRawStatsInternal = async () => {
     };
 };
 
-// 학습 시간, 수면, 재정 상태 조회
+// 학습 시간, 수면, 재정 상태 조회 (사용자별)
 const getRawStats = asyncHandler(async (req, res) => {
-    const rawStats = await getRawStatsInternal();
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
+    const rawStats = await getRawStatsInternal(userId);
 
     if (!rawStats) {
         return res.status(404).json({ message: "초기 설정 데이터가 없습니다" });
     }
 
     res.status(200).json(rawStats);
-    return rawStats
+    return rawStats;
 });
 
 // 가장 부족한 상태 찾기
@@ -92,7 +99,7 @@ const getWeakestState = (rawStats) => {
     let minScore = scores.study;
 
     if (scores.study === scores.sleep && scores.sleep === scores.finance)
-        return 0
+        return 0;
 
     for (const [state, score] of Object.entries(scores)) {
         if (score < minScore) {

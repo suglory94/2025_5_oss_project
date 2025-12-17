@@ -1,28 +1,36 @@
-// 평행우주
+// 평행우주 (사용자별 분리)
 const mongoose = require("mongoose");
 
 const branchSchema = new mongoose.Schema({
+    userId: {
+        type: String,
+        required: true,
+        index: true
+    },
     day: Number,
     hour: Number,
     choiceType: String,
     oppositeChoice: String,
     oppositeCost: Number,
     oppositeDescription: String,
-    oppositeFinanceChange: { // 실제 재정 변화량
+    oppositeFinanceChange: {
         type: Number,
         default: 0
     },
-    oppositeSleepChangeMinutes: { // 수면 시간 변화량 (분)
+    oppositeSleepChangeMinutes: {
         type: Number,
         default: 0
     },
-    oppositeStudyChangeMinutes: { // 학습 시간 변화량 (분)
+    oppositeStudyChangeMinutes: {
         type: Number,
         default: 0
     }
 }, {
     timestamps: true
 });
+
+// 복합 인덱스
+branchSchema.index({ userId: 1, day: 1, hour: 1 });
 
 const Branch = mongoose.model("Branch", branchSchema);
 module.exports = Branch;

@@ -3,10 +3,16 @@ const UserSettings = require("../models/userSettingsModel");
 const HourlyChoice = require("../models/hourlyChoiceModel");
 const Branch = require("../models/branchModel");
 
-// 히스토리 조회 (실제 우주 + 평행 우주)
+// 히스토리 조회 (실제 우주 + 평행 우주) - 사용자별
 const getWeeklyHistory = asyncHandler(async (req, res) => {
-    const choices = await HourlyChoice.find().sort({ day: 1, hour: 1 });
-    const branches = await Branch.find().sort({ day: 1, hour: 1 });
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
+    const choices = await HourlyChoice.find({ userId }).sort({ day: 1, hour: 1 });
+    const branches = await Branch.find({ userId }).sort({ day: 1, hour: 1 });
 
     res.status(200).json({
         actual_universe: choices,
@@ -21,13 +27,13 @@ const calculateStateChanges = (choiceType, choice, cost, duration = 75, category
     let studyChangeMinutes = 0;
 
     // 1. 재정 변화 계산
-    const isIncome = 
-        choice.includes('part_time') || 
+    const isIncome =
+        choice.includes('part_time') ||
         choice.includes('알바') ||
         choice.includes('아르바이트') ||
         choice.includes('근무') ||
         choice.includes('벌');
-    
+
     if (isIncome) {
         financeChange = Math.abs(cost); // 수입은 양수
     } else {
@@ -69,7 +75,6 @@ const calculateStateChanges = (choiceType, choice, cost, duration = 75, category
 
         case 'ai_branch':
         case 'free_time':
-            // ✅ 1. 먼저 category 필드 확인 (AI 선택지의 경우)
             if (category) {
                 switch (category) {
                     case 'study':
@@ -80,11 +85,9 @@ const calculateStateChanges = (choiceType, choice, cost, duration = 75, category
                         sleepChangeMinutes += duration;
                         break;
                     case 'finance':
-                        // 재정은 이미 위에서 처리됨
                         break;
                 }
-            } 
-            // ✅ 2. category가 없으면 텍스트 기반 판단 (fallback)
+            }
             else if (choice.includes('공부') || choice.includes('study') || choice.includes('학습')) {
                 studyChangeMinutes += duration;
             } else if (choice.includes('자') || choice.includes('sleep') || choice.includes('수면') || choice.includes('낮잠')) {
@@ -97,7 +100,6 @@ const calculateStateChanges = (choiceType, choice, cost, duration = 75, category
             break;
 
         case 'meal':
-            // 식사는 재정 변화만 있음
             break;
 
         case 'exercise':
@@ -105,7 +107,6 @@ const calculateStateChanges = (choiceType, choice, cost, duration = 75, category
             break;
 
         case 'hobby':
-            // 취미활동은 주로 재정 변화만
             break;
 
         case 'rest':

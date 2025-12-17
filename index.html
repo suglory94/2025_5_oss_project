@@ -3,31 +3,38 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!--모바일 깨짐 방지-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>평행우주시뮬레이션</title>
     <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
     <div class="container" id="homeScreen">
-        <!-- 배경 애니메이션 효과 -->
         <div class="background-effects">
             <div class="effect-circle effect-1"></div>
             <div class="effect-circle effect-2"></div>
         </div>
 
-        <!-- 메인 콘텐츠 -->
         <div class="content">
             <h1 class="title">평행우주시뮬레이션</h1>
+
             <!-- 사용자 ID 입력 섹션 -->
             <div class="user-id-section">
                 <div class="user-id-label">👤 사용자 ID를 입력해주세요</div>
                 <input type="text" id="userIdInput" class="user-id-input" placeholder="예: student01" maxlength="20">
+                <button class="btn btn-primary" id="setUserIdBtn" onclick="handleUserIdInput()"
+                    style="margin-top: 15px; width: 100%; max-width: 320px; height: 48px;">
+                    로그인
+                </button>
                 <div class="current-user-display" id="currentUserDisplay" style="display: none;">
-                    현재 사용자: <strong id="currentUserName"></strong>
+                    ✅ 로그인 완료: <strong id="currentUserName"></strong>
+                    <button class="btn btn-outline logout-btn" onclick="logoutUser()">
+                        로그아웃
+                    </button>
                 </div>
             </div>
-            <div class="button-group">
+
+            <div class="button-group" id="mainButtons" style="display: none;">
                 <button class="btn btn-outline" onclick="showHistory()">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
@@ -52,7 +59,6 @@
                     </svg>
                     시간표 입력
                 </button>
-
             </div>
         </div>
     </div>
@@ -107,7 +113,6 @@
         <div class="timetable-container">
             <h2 class="timetable-title">시간표 및 예산 설정</h2>
 
-            <!-- 초기화 버튼 추가 -->
             <button type="button" class="btn btn-outline" onclick="resetAllData()"
                 style="width: 100%; margin-bottom: 20px; background: rgba(220, 38, 38, 0.2); border-color: rgba(220, 38, 38, 0.6); color: #fca5a5;">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -137,8 +142,7 @@
                                 <th class="day-header">금</th>
                             </tr>
                         </thead>
-                        <tbody id="timetableBody">
-                        </tbody>
+                        <tbody id="timetableBody"></tbody>
                     </table>
                     <div class="timetable-hint">
                         클릭해서 시간표를 입력해주세요. (설정 및 시간표 저장 버튼 클릭 시 최종 전송)
@@ -169,13 +173,10 @@
         </div>
     </div>
 
-    <!-- 히스토리 화면 -->
     <div class="full-screen-container history-screen" id="historyScreen" style="display: none;">
         <div class="history-container">
-            <!-- 상단 헤더 영역 -->
             <div class="history-header-row">
                 <h2 class="history-title">🕰️ 평행 우주 히스토리</h2>
-
                 <button class="btn btn-outline back-btn-inline" onclick="goBackToHome()">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -184,16 +185,11 @@
                 </button>
             </div>
 
-
-
-
-            <!-- ✅ 누적 점수 요약 섹션 추가 -->
             <div id="totalScoresSummary"
                 style="margin: 20px 0; padding: 25px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%); border-radius: 15px; border: 2px solid rgba(139, 92, 246, 0.3);">
                 <h3 style="color: #8b5cf6; margin-bottom: 20px; font-size: 1.3rem; text-align: center;">📊 누적 점수 요약</h3>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <!-- 나의 우주 -->
                     <div
                         style="padding: 20px; background: rgba(139, 92, 246, 0.15); border-radius: 12px; border: 2px solid rgba(139, 92, 246, 0.4);">
                         <h4 style="color: #a78bfa; margin-bottom: 15px; font-size: 1.1rem; text-align: center;">✨ 나의 우주
@@ -220,7 +216,6 @@
                         </div>
                     </div>
 
-                    <!-- 평행 우주 -->
                     <div
                         style="padding: 20px; background: rgba(245, 158, 11, 0.15); border-radius: 12px; border: 2px solid rgba(245, 158, 11, 0.4);">
                         <h4 style="color: #fbbf24; margin-bottom: 15px; font-size: 1.1rem; text-align: center;">🌌 평행 우주
@@ -248,7 +243,6 @@
                     </div>
                 </div>
 
-                <!-- 차이 비교 -->
                 <div style="margin-top: 20px; padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 10px;">
                     <h4 style="color: #c084fc; margin-bottom: 10px; font-size: 1rem; text-align: center;">🔄 차이 분석</h4>
                     <div style="display: flex; justify-content: space-around; font-size: 0.95rem;">
@@ -269,25 +263,21 @@
                 </div>
             </div>
 
-            <!-- 리스트 영역 -->
             <div id="historyList" class="history-list">
                 <p style="text-align: center; color: #aaa;">기록을 불러오는 중...</p>
             </div>
         </div>
 
-        <div id="three-container" style="width:1000px;height:1200px;margin:20px auto;">
-        </div>
-
+        <div id="three-container" style="width:1000px;height:1200px;margin:20px auto;"></div>
     </div>
 
     <script>
         let currentUserId = null;
         let selectedChoice = null;
-        let parallelChoiceData = null; // 평행 우주 데이터
+        let parallelChoiceData = null;
         let currentQuestionData = null;
-        let timetableData = []; // 시간표 데이터를 저장할 배열
+        let timetableData = [];
         let currentCellKey = '';
-
         let allFinalOptions = [];
 
         const DAYS_KR = ["월", "화", "수", "목", "금"];
@@ -303,30 +293,25 @@
             6: { start: "16:30", end: "17:45" }
         };
 
-        // 페이지 로드 시 localStorage에서 이전 사용자 ID 불러오기
+        // 페이지 로드 시 처리
         document.addEventListener('DOMContentLoaded', function () {
-            const savedUserId = localStorage.getItem('parallelUniverseUserId');
-            if (savedUserId) {
-                document.getElementById('userIdInput').value = savedUserId;
-                setUserId(savedUserId);
-            }
-
-            // 입력란에서 엔터 키 처리
+            // 엔터 키 처리
             document.getElementById('userIdInput').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
                     handleUserIdInput();
                 }
             });
 
-            // 입력란 변경 시 실시간으로 ID 설정
-            document.getElementById('userIdInput').addEventListener('input', function (e) {
-                const userId = e.target.value.trim();
-                if (userId) {
-                    setUserId(userId);
-                } else {
-                    clearUserId();
-                }
-            });
+            // 시간표 모달 엔터 키
+            const input = document.getElementById('timetableInput');
+            if (input) {
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveTimetableCell();
+                    }
+                });
+            }
         });
 
         // 사용자 ID 입력 처리
@@ -349,33 +334,37 @@
         // 사용자 ID 설정
         function setUserId(userId) {
             currentUserId = userId;
-            localStorage.setItem('parallelUniverseUserId', userId);
 
             // UI 업데이트
+            document.getElementById('userIdInput').disabled = true;
+            document.getElementById('setUserIdBtn').style.display = 'none';
             document.getElementById('currentUserDisplay').style.display = 'block';
             document.getElementById('currentUserName').textContent = userId;
+            document.getElementById('mainButtons').style.display = 'flex';
 
-            // 버튼 활성화
-            document.getElementById('historyBtn').disabled = false;
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('timetableBtn').disabled = false;
+            console.log('✅ 로그인 성공:', userId);
         }
 
-        // 사용자 ID 초기화
-        function clearUserId() {
-            currentUserId = null;
-            document.getElementById('currentUserDisplay').style.display = 'none';
+        // 로그아웃
+        function logoutUser() {
+            if (!confirm('로그아웃하시겠습니까?')) return;
 
-            // 버튼 비활성화
-            document.getElementById('historyBtn').disabled = true;
-            document.getElementById('startBtn').disabled = true;
-            document.getElementById('timetableBtn').disabled = true;
+            currentUserId = null;
+
+            // UI 초기화
+            document.getElementById('userIdInput').value = '';
+            document.getElementById('userIdInput').disabled = false;
+            document.getElementById('setUserIdBtn').style.display = 'block';
+            document.getElementById('currentUserDisplay').style.display = 'none';
+            document.getElementById('mainButtons').style.display = 'none';
+
+            console.log('✅ 로그아웃 완료');
         }
 
         // API 호출 시 userId를 포함하는 헬퍼 함수
         async function fetchWithUserId(url, options = {}) {
             if (!currentUserId) {
-                alert('먼저 사용자 ID를 입력해주세요!');
+                alert('먼저 로그인해주세요!');
                 throw new Error('User ID not set');
             }
 
@@ -384,7 +373,7 @@
                 const separator = url.includes('?') ? '&' : '?';
                 url = `${url}${separator}userId=${encodeURIComponent(currentUserId)}`;
             }
-            // POST/PUT 요청은 body에 추가
+            // POST/PUT/DELETE 요청은 body에 추가
             else {
                 if (options.body) {
                     const bodyData = JSON.parse(options.body);
@@ -401,11 +390,10 @@
 
         async function startSimulation() {
             if (!currentUserId) {
-                alert('먼저 사용자 ID를 입력해주세요!');
+                alert('먼저 로그인해주세요!');
                 return;
             }
 
-            // 화면 전환
             document.getElementById('homeScreen').style.display = 'none';
             document.getElementById('choiceScreen').style.display = 'flex';
 
@@ -432,7 +420,7 @@
 
         async function showHistory() {
             if (!currentUserId) {
-                alert('먼저 사용자 ID를 입력해주세요!');
+                alert('먼저 로그인해주세요!');
                 return;
             }
 
@@ -447,25 +435,19 @@
             }
 
             try {
-                // 히스토리 데이터 로드
-                const response = await fetch('/api/hourly/history');
+                const response = await fetchWithUserId('/api/hourly/history');
                 const result = await response.json();
 
-                // 점수 데이터 로드
-                const statsResponse = await fetch('/api/hourly/raw-stats');
+                const statsResponse = await fetchWithUserId('/api/hourly/raw-stats');
                 const stats = await statsResponse.json();
 
-                // 점수 업데이트
                 if (window.updateCharacter) {
                     window.updateCharacter.updateFinanceStatus(stats.finance);
                     window.updateCharacter.updateStudy(stats.grade);
                     window.updateCharacter.updateSleep(stats.sleep);
                 }
 
-                // 누적 점수 계산 및 표시
                 calculateAndDisplayTotalScores(result);
-
-                // 히스토리 포맷팅 및 렌더링
                 const formattedHistory = formatHistoryData(result);
                 renderHistoryList(formattedHistory);
 
@@ -476,17 +458,14 @@
         }
 
         function calculateAndDisplayTotalScores(historyData) {
-            // 나의 우주 누적 점수
             let myTotalFinance = 0;
             let myTotalStudy = 0;
             let myTotalSleep = 0;
 
-            // 평행 우주 누적 점수
             let parallelTotalFinance = 0;
             let parallelTotalStudy = 0;
             let parallelTotalSleep = 0;
 
-            // 나의 우주 계산
             if (historyData.actual_universe && Array.isArray(historyData.actual_universe)) {
                 historyData.actual_universe.forEach(choice => {
                     myTotalFinance += choice.financeChange || 0;
@@ -495,7 +474,6 @@
                 });
             }
 
-            // 평행 우주 계산
             if (historyData.parallel_universe && Array.isArray(historyData.parallel_universe)) {
                 historyData.parallel_universe.forEach(branch => {
                     parallelTotalFinance += branch.oppositeFinanceChange || 0;
@@ -504,12 +482,10 @@
                 });
             }
 
-            // 차이 계산
             const financeDiff = myTotalFinance - parallelTotalFinance;
             const studyDiff = myTotalStudy - parallelTotalStudy;
             const sleepDiff = myTotalSleep - parallelTotalSleep;
 
-            // 화면에 표시
             updateTotalScoreDisplay('myTotalFinance', myTotalFinance, '원');
             updateTotalScoreDisplay('myTotalStudy', myTotalStudy, '분');
             updateTotalScoreDisplay('myTotalSleep', myTotalSleep, '분');
@@ -521,15 +497,8 @@
             updateDiffDisplay('financeDiff', financeDiff, '원');
             updateDiffDisplay('studyDiff', studyDiff, '분');
             updateDiffDisplay('sleepDiff', sleepDiff, '분');
-
-            console.log('📊 누적 점수:', {
-                my: { finance: myTotalFinance, study: myTotalStudy, sleep: myTotalSleep },
-                parallel: { finance: parallelTotalFinance, study: parallelTotalStudy, sleep: parallelTotalSleep },
-                diff: { finance: financeDiff, study: studyDiff, sleep: sleepDiff }
-            });
         }
 
-        // 점수 표시 업데이트
         function updateTotalScoreDisplay(elementId, value, unit) {
             const element = document.getElementById(elementId);
             if (!element) return;
@@ -538,17 +507,16 @@
 
             if (value > 0) {
                 element.textContent = `+${formattedValue}${unit}`;
-                element.style.color = '#6ee7b7'; // 초록색
+                element.style.color = '#6ee7b7';
             } else if (value < 0) {
                 element.textContent = `${formattedValue}${unit}`;
-                element.style.color = '#fca5a5'; // 빨간색
+                element.style.color = '#fca5a5';
             } else {
                 element.textContent = `0${unit}`;
-                element.style.color = '#9ca3af'; // 회색
+                element.style.color = '#9ca3af';
             }
         }
 
-        // 차이 표시 업데이트
         function updateDiffDisplay(elementId, diff, unit) {
             const element = document.getElementById(elementId);
             if (!element) return;
@@ -557,21 +525,20 @@
 
             if (diff > 0) {
                 element.textContent = `+${formattedDiff}${unit}`;
-                element.style.color = '#6ee7b7'; // 초록색 (나의 우주가 더 좋음)
+                element.style.color = '#6ee7b7';
             } else if (diff < 0) {
                 element.textContent = `-${formattedDiff}${unit}`;
-                element.style.color = '#fca5a5'; // 빨간색 (평행 우주가 더 좋음)
+                element.style.color = '#fca5a5';
             } else {
                 element.textContent = `0${unit}`;
-                element.style.color = '#9ca3af'; // 회색 (동일)
+                element.style.color = '#9ca3af';
             }
         }
-        // formatHistoryData 함수 추가
+
         function formatHistoryData(result) {
             const actualUniverse = result.actual_universe || [];
             const parallelUniverse = result.parallel_universe || [];
 
-            // day와 hour 기준으로 그룹핑
             const grouped = [];
 
             actualUniverse.forEach(actual => {
@@ -587,23 +554,20 @@
 
             return grouped;
         }
-        // 시간표 버튼
+
         async function showTimetableScreen() {
             if (!currentUserId) {
-                alert('먼저 사용자 ID를 입력해주세요!');
+                alert('먼저 로그인해주세요!');
                 return;
             }
 
             document.getElementById('homeScreen').style.display = 'none';
             document.getElementById('timetableScreen').style.display = 'flex';
-            // 저장된 시간표 불러오기
-            await loadSavedTimetable();
 
-            // 표 렌더링
+            await loadSavedTimetable();
             initTimetableBody();
         }
 
-        // 시간표 표 내부 렌더링
         function initTimetableBody() {
             const tbody = document.getElementById('timetableBody');
             tbody.innerHTML = '';
@@ -628,7 +592,6 @@
             }
         }
 
-        // 시간표 셀 클릭 시 모달 열기
         function openTimetableModal(cellKey, period, day) {
             currentCellKey = cellKey;
             const cellData = timetableData.find(d => d.key === cellKey);
@@ -638,14 +601,12 @@
             document.getElementById('timetableInput').focus();
         }
 
-        // 시간표 모달 닫기
         function closeTimetableModal() {
             document.getElementById('timetableModal').style.display = 'none';
             document.getElementById('timetableInput').value = '';
             currentCellKey = '';
         }
 
-        // 시간표 셀 데이터 저장
         function saveTimetableCell() {
             const value = document.getElementById('timetableInput').value.trim();
 
@@ -664,7 +625,6 @@
             initTimetableBody();
         }
 
-        // 시간표 및 예산 설정 폼 제출 핸들러 (백엔드 전송)
         document.getElementById('schedule-form-full').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -676,15 +636,12 @@
             }
 
             const schedule = {};
-            // timetable_array는 수업이 있는 시간(1)과 없는 시간(0)을 나타내는 5x6 배열
             const timetable_array = Array(DAYS.length).fill(null).map(() => Array(PERIODS.length).fill(0));
 
-            // 모든 요일을 빈 배열로 초기화
             DAYS.forEach(dayName => {
                 schedule[dayName] = [];
             });
 
-            // timetableData 배열을 기반으로 백엔드용 데이터 생성
             timetableData.forEach(item => {
                 const [dayIndex, period] = item.key.split('-').map(Number);
                 const dayName = DAYS[dayIndex];
@@ -712,13 +669,10 @@
                 }
             });
 
-            // 백엔드 API 호출
             try {
-                const response = await fetch(`/api/hourly/settings`, {
+                const response = await fetchWithUserId('/api/hourly/settings', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         schedule,
                         initialBudget,
@@ -729,10 +683,9 @@
                 const data = await response.json();
 
                 if (response.status === 201) {
-                    alert(`설정이 성공적으로 저장되었습니다!\n초기 예산: ${data.settings.initialBudget.toLocaleString()}원`);
+                    alert(`✅ 설정이 성공적으로 저장되었습니다!\n초기 예산: ${data.settings.initialBudget.toLocaleString()}원`);
                     goBackToHome();
-                }
-                else {
+                } else {
                     alert(`설정 저장 오류: ${data.message || '알 수 없는 오류'}`);
                 }
             } catch (error) {
@@ -741,50 +694,19 @@
             }
         });
 
-
-        // 시작 버튼 핸들러: AI 질문 불러오기
-        async function startSimulation() {
-            document.getElementById('homeScreen').style.display = 'none';
-            document.getElementById('choiceScreen').style.display = 'flex';
-
-            try {
-                const response = await fetch(`/api/hourly/question`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const data = await response.json();
-
-                if (response.status === 200) {
-                    currentQuestionData = data;
-                    renderChoiceScreen(data);
-                }
-                else {
-                    alert(`시뮬레이션 시작 오류: ${data.message || '알 수 없는 오류'}`);
-                    goBackToHome();
-                }
-            }
-            catch (error) {
-                console.error('질문 불러오기 중 오류: ', error);
-                alert(`서버와 통신 오류가 발생했습니다.`);
-                goBackToHome();
-            }
-        }
-
-        // 선택 화면 렌더링
         function renderChoiceScreen(data) {
             allFinalOptions = data.options;
-            // 1. data 유효성 검사 강화
+
             if (!data) {
                 alert("데이터를 불러오지 못했습니다.");
                 goBackToHome();
                 return;
             }
 
-            // 2. 메시지만 있고 선택지(options)가 없는 경우 처리
             if (!data.options || !Array.isArray(data.options) || data.options.length === 0) {
                 document.getElementById('choice-question').textContent = data.message || "표시할 내용이 없습니다.";
                 document.getElementById('choice-context').textContent = "";
-                document.getElementById('choice-options-container').innerHTML = ''; // 버튼 비우기
+                document.getElementById('choice-options-container').innerHTML = '';
 
                 document.getElementById('cost-input-area').style.display = 'none';
                 document.getElementById('description-input-area').style.display = 'none';
@@ -793,17 +715,14 @@
                 return;
             }
 
-            // 정상적인 질문 표시
             document.getElementById('choice-question').textContent = data.question;
 
-            // 컨텍스트 업데이트
             const dayNameKr = data.day !== undefined && data.day >= 0 && data.day < 5 ? DAYS_KR[data.day] : '오늘';
             document.getElementById('choice-context').textContent = `유형: ${data.choiceType} (${data.subject || dayNameKr} ${data.hour}시)`;
 
             const optionsContainer = document.getElementById('choice-options-container');
             optionsContainer.innerHTML = '';
 
-            // options가 확실히 배열일 때만 실행됨
             data.options.forEach(option => {
                 const button = document.createElement('button');
                 button.type = 'button';
@@ -825,7 +744,6 @@
                 optionsContainer.appendChild(button);
             });
 
-            // 초기화
             selectedChoice = null;
             parallelChoiceData = null;
             document.getElementById('cost-input-area').style.display = 'none';
@@ -835,29 +753,22 @@
             document.getElementById('save-choice-btn').style.display = 'block';
         }
 
-        // 선택지 버튼 클릭 핸들러
         function handleOptionSelect(event) {
             const btn = event.currentTarget;
             const buttons = document.querySelectorAll('#choice-options-container .choice-item');
 
-            // 선택 하이라이트
             buttons.forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
 
             selectedChoice = btn.dataset.value;
 
-            // 조건문 단순화
             if (btn.dataset.value === 'attend_base' || btn.dataset.value === 'skip_base') {
-                const subject = currentQuestionData.subject || "수업"; // subject가 없을 경우 대비
-
+                const subject = currentQuestionData.subject || "수업";
                 fetchBranchQuestion(currentQuestionData.day, currentQuestionData.hour, subject, btn.dataset.value);
-
                 document.getElementById('save-choice-btn').style.display = 'none';
-
                 return;
             }
 
-            // 평행 우주 데이터
             const unselectedButtons = Array.from(buttons).filter(b => !b.classList.contains('selected'));
 
             window.currentParallelChoices = [];
@@ -880,7 +791,6 @@
                 });
             });
 
-            // 비용 및 설명 입력란
             let selectedOptionData = {};
             try {
                 selectedOptionData = JSON.parse(btn.dataset.optionData || '{}');
@@ -911,35 +821,27 @@
             saveBtn.style.display = 'block';
         }
 
-        // 2단계 질문
         async function fetchBranchQuestion(day, hour, subject, baseChoice) {
-            const response = await fetch(`/api/hourly/branch-question`, {
+            const response = await fetchWithUserId('/api/hourly/branch-question', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ day, hour, subject, baseChoice })
             });
 
             if (response.ok) {
                 const branchData = await response.json();
-
                 updateQuestionUI(branchData);
-
             } else {
                 alert("2단계 질문을 가져오는 데 실패했습니다.");
             }
         }
 
-        // 2단계 UI 업데이트
         function updateQuestionUI(data) {
             currentQuestionData = data;
             allFinalOptions = data.options;
 
-            // 질문 텍스트 업데이트
             document.getElementById('choice-question').textContent = data.question;
 
-            // 컨텍스트 업데이트
             const dayNameKr = data.day !== undefined && data.day >= 0 && data.day < 5 ? DAYS_KR[data.day] : '오늘';
             document.getElementById('choice-context').textContent = `유형: ${data.choiceType} (${data.subject || dayNameKr} ${data.hour}시)`;
 
@@ -952,7 +854,6 @@
                 button.className = 'choice-item';
                 button.innerHTML = `<span>${option.label}</span>`;
 
-                // 데이터셋 바인딩
                 button.dataset.value = option.value;
                 button.dataset.hasCost = option.hasCost;
                 button.dataset.costPrompt = option.costPrompt || '';
@@ -974,9 +875,6 @@
             document.getElementById('save-choice-btn').style.display = 'none';
         }
 
-
-
-        // 평행우주 데이터 전송
         document.getElementById('activity-choice-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -1002,14 +900,9 @@
                 return;
             }
 
-            // 1. 선택한 옵션의 category 찾기
             const selectedOption = allFinalOptions.find(opt => opt.value === selectedChoice);
             const selectedCategory = selectedOption ? selectedOption.category : null;
 
-            console.log('✅ 선택한 옵션:', selectedOption);
-            console.log('✅ 선택한 category:', selectedCategory);
-
-            // 2. parallelChoices에 category 포함
             const parallelChoicesPayload = allFinalOptions
                 .filter(option => option.value !== selectedChoice)
                 .map(option => {
@@ -1021,11 +914,10 @@
                         value: option.value,
                         cost: oppositeCost,
                         label: option.label,
-                        category: option.category || null  // ✅ category 추가
+                        category: option.category || null
                     };
                 });
 
-            // 3. payload에 category 포함
             const payload = {
                 day: currentQuestionData.day,
                 hour: currentQuestionData.hour,
@@ -1037,27 +929,19 @@
                 duration: 75,
                 customDescription: document.getElementById('custom-description').value.trim() || undefined,
                 parallelChoices: parallelChoicesPayload,
-                category: selectedCategory  // ✅ category 추가
+                category: selectedCategory
             };
 
-            console.log('📤 백엔드로 보내는 데이터:', payload);
-
-            // 백엔드 API 호출
             try {
-                const response = await fetch(`/api/hourly/choices`, {
+                const response = await fetchWithUserId('/api/hourly/choices', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
                 const data = await response.json();
 
                 if (response.status === 201) {
-                    console.log('✅ 서버 응답:', data);
-
-                    // 점수 즉시 업데이트
                     if (data.currentScores && window.updateCharacter) {
                         window.updateCharacter.updateFinanceStatus(data.currentScores.finance);
                         window.updateCharacter.updateStudy(data.currentScores.study);
@@ -1065,8 +949,6 @@
                     }
 
                     alert(`✅ 활동 저장 완료!\n\n현재 예산: ${data.actual_universe.currentBudget.toLocaleString()}원`);
-
-                    // 히스토리로 이동
                     showHistory();
                 } else {
                     alert(`❌ 활동 저장 오류: ${data.message || '알 수 없는 오류'}`);
@@ -1075,22 +957,6 @@
                 console.error('활동 저장 오류:', error);
                 alert('서버 통신 오류가 발생했습니다.');
             }
-        });
-
-        // 엔터 키 입력 시 시간표 모달 저장
-        document.addEventListener('DOMContentLoaded', function () {
-            const input = document.getElementById('timetableInput');
-            if (input) {
-                input.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        saveTimetableCell();
-                    }
-                });
-            }
-            document.getElementById('homeScreen').style.display = 'flex';
-
-            loadSavedTimetable();
         });
 
         function goBackToHome() {
@@ -1105,7 +971,7 @@
 
         async function loadSavedTimetable() {
             try {
-                const response = await fetch(`/api/hourly/settings`);
+                const response = await fetchWithUserId('/api/hourly/settings');
 
                 if (response.status === 200) {
                     const data = await response.json();
@@ -1144,7 +1010,7 @@
 
         async function resetAllData() {
             if (!currentUserId) {
-                alert('먼저 사용자 ID를 입력해주세요!');
+                alert('먼저 로그인해주세요!');
                 return;
             }
 
@@ -1153,7 +1019,7 @@
             if (!confirmed) return;
 
             try {
-                const response = await fetch(`/api/hourly/reset`, {
+                const response = await fetchWithUserId('/api/hourly/reset', {
                     method: 'DELETE'
                 });
 
@@ -1173,21 +1039,17 @@
             }
         }
 
-
-
-        // 부호에 따라 색상 지정
         function formatChange(value, unit) {
             if (value === null || value === undefined) return `0${unit}`;
             if (value > 0) {
-                return `<span style="color: #6ee7b7;">+${value.toLocaleString()}${unit}</span>`; // Tailwind green-300
+                return `<span style="color: #6ee7b7;">+${value.toLocaleString()}${unit}</span>`;
             } else if (value < 0) {
-                return `<span style="color: #fca5a5;">${value.toLocaleString()}${unit}</span>`; // Tailwind red-300
+                return `<span style="color: #fca5a5;">${value.toLocaleString()}${unit}</span>`;
             } else {
                 return `0${unit}`;
             }
         }
 
-        // 히스토리 리스트 렌더링 함수
         function renderHistoryList(historyData) {
             const listContainer = document.getElementById('historyList');
             listContainer.innerHTML = '';
@@ -1200,18 +1062,14 @@
             const latestEntry = historyData[historyData.length - 1];
             const latestActual = latestEntry.actual;
 
-            // 예시로, 'current' 값이 있다면 사용하고, 없다면 기본값 50을 사용합니다.
-            // 실제 백엔드 데이터에 따라 키 이름은 달라질 수 있습니다.
-            const latestFinance = latestActual.currentBudget / 10000; // 예산 만원당 10점으로 가정
+            const latestFinance = latestActual.currentBudget / 10000;
             const latestStudy = latestActual.currentStudyScore || 50;
             const latestSleep = latestActual.currentSleepScore || 50;
 
-            // 점수를 0-100% 범위로 제한 (API 스펙에 맞게 조정 필요)
             const financePercent = Math.min(100, Math.max(0, latestFinance));
             const studyPercent = Math.min(100, Math.max(0, latestStudy));
             const sleepPercent = Math.min(100, Math.max(0, latestSleep));
 
-            // 3D 캐릭터 업데이트
             if (window.updateCharacter) {
                 window.updateCharacter.updateFinanceStatus(financePercent);
                 window.updateCharacter.updateStudy(studyPercent);
@@ -1222,7 +1080,6 @@
                 const a = entry.actual;
                 const dayNameKr = DAYS_KR[a.day] || `Day ${a.day + 1}`;
 
-                console.log('실제 우주 데이터:', a);
                 let actualHtml = `
             <div class="universe-container actual-universe">
                 <div class="universe-title">✨ 나의 우주 선택 (${dayNameKr} ${a.hour}시)</div>
@@ -1235,7 +1092,6 @@
             </div>
         `;
 
-                // 평행 우주 정보
                 let parallelHtml = '';
                 if (entry.parallels.length === 0) {
                     parallelHtml = `
@@ -1246,7 +1102,6 @@
             `;
                 } else {
                     entry.parallels.forEach((p, index) => {
-                        console.log('평행 우주 데이터:', p);
                         parallelHtml += `
                     <div class="universe-container parallel-universe ${index > 0 ? 'mt-2' : ''}">
                         <div class="universe-title">🌌 평행 우주 (선택하지 않은 길)</div>
@@ -1274,7 +1129,6 @@
                 listContainer.insertAdjacentHTML('beforeend', itemHtml);
             });
         }
-
     </script>
     <script type="module">
         import {
@@ -1286,7 +1140,6 @@
 
         window.initCharacter3D = initThreeScene;
 
-        // 전역으로 노출 (기존 script에서 쓰기 위해)
         window.updateCharacter = {
             updateStudy,
             updateSleep,

@@ -1,7 +1,12 @@
-// 시간별 선택
+// 시간별 선택 (사용자별 분리)
 const mongoose = require("mongoose");
 
 const hourlyChoiceSchema = new mongoose.Schema({
+    userId: {
+        type: String,
+        required: true,
+        index: true  // 빠른 조회를 위한 인덱스
+    },
     day: {
         type: Number,
         required: true,
@@ -48,6 +53,9 @@ const hourlyChoiceSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+// 복합 인덱스: 사용자별 + 날짜/시간별 빠른 조회
+hourlyChoiceSchema.index({ userId: 1, day: 1, hour: 1 });
 
 const HourlyChoice = mongoose.model("HourlyChoice", hourlyChoiceSchema);
 module.exports = HourlyChoice;

@@ -1,4 +1,4 @@
-// 시간표 모델
+// 시간표 모델 (사용자별 분리)
 const mongoose = require("mongoose");
 
 const classSchema = new mongoose.Schema({
@@ -8,6 +8,12 @@ const classSchema = new mongoose.Schema({
 }, { _id: false });
 
 const scheduleSchema = new mongoose.Schema({
+    userId: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true
+    },
     monday: [classSchema],
     tuesday: [classSchema],
     wednesday: [classSchema],

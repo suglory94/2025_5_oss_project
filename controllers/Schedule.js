@@ -2,7 +2,6 @@ const asyncHandler = require("express-async-handler");
 const UserSettings = require("../models/userSettingsModel");
 const Schedule = require("../models/scheduleModel");
 
-// 요일 맵핑 (CheckClass.js에서도 사용)
 const WEEKDAYS_MAP = {
     monday: 0,
     tuesday: 1,
@@ -11,21 +10,26 @@ const WEEKDAYS_MAP = {
     friday: 4
 };
 
-// 시간표 + 초기 재정 저장
+// 시간표 + 초기 재정 저장 (사용자별)
 const saveInitialSettings = asyncHandler(async (req, res) => {
-    const { schedule, initialBudget, timetable_array } = req.body;
+    const { schedule, initialBudget, timetable_array, userId } = req.body;
 
-    // 시간표 저장
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
+    // 시간표 저장 (userId로 찾아서 업데이트 또는 생성)
     const savedSchedule = await Schedule.findOneAndUpdate(
-        {},
-        schedule,
+        { userId },
+        { userId, ...schedule },
         { upsert: true, new: true }
     );
 
     // 사용자 설정 저장
     const settings = await UserSettings.findOneAndUpdate(
-        {},
+        { userId },
         {
+            userId,
             initialBudget,
             currentBudget: initialBudget,
             weekStartDate: new Date(),
@@ -41,22 +45,22 @@ const saveInitialSettings = asyncHandler(async (req, res) => {
     });
 });
 
-// 시간표 상태 조회
+// 시간표 상태 조회 (사용자별)
 const checkScheduleStatus = asyncHandler(async (req, res) => {
-    const { day, period } = req.body;
+    const { day, period, userId } = req.body;
 
-    // 저장된 시간표 배열 조회
-    const settings = await UserSettings.findOne().select('timetableArray');
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
 
-    // 데이터 유효성 및 초기 설정 확인
+    const settings = await UserSettings.findOne({ userId }).select('timetableArray');
+
     if (!settings || !settings.timetableArray || settings.timetableArray.length === 0) {
-        // 시간표 설정이 없거나 비어있으면 수업이 없다고 가정
         return res.status(200).json({ hasClass: false });
     }
 
     const timetableArray = settings.timetableArray;
 
-    // 요일 및 교시를 배열 인덱스로 변환
     const dayIndex = WEEKDAYS_MAP[day];
     const periodIndex = period - 1;
 
@@ -68,7 +72,6 @@ const checkScheduleStatus = asyncHandler(async (req, res) => {
         }
     }
 
-    // 결과 반환
     return res.status(200).json({
         hasClass: hasClass
     });

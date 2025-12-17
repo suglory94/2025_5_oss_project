@@ -4,42 +4,39 @@ const HourlyChoice = require("../models/hourlyChoiceModel");
 const Branch = require("../models/branchModel");
 const Schedule = require("../models/scheduleModel");
 
-// CheckClass.js
 const {
     findNextClassDetails,
     timeToMinutes,
     DAYS
 } = require("./CheckClass");
 
-// Stats.js
 const { getRawStatsInternal, getWeakestState } = require("./Stats");
-
-// history.js
 const { calculateStateChanges } = require("./history");
-
-// setting.js
 const { generateDescription, generateOpposite } = require("./setting");
-
-// AI
 const { choiceForfreetime } = require("../ai/choiceByai");
 
 /**
- * 시간별 질문 생성
+ * 시간별 질문 생성 (사용자별)
  */
 const getHourlyQuestion = asyncHandler(async (req, res) => {
+    const { userId } = req.body;
+
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
     const now = new Date();
     const currentDayJsIndex = now.getDay();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const currentHour = now.getHours();
 
-    // 월~금만 사용
     const currentDay =
         currentDayJsIndex >= 1 && currentDayJsIndex <= 5
             ? currentDayJsIndex - 1
             : -1;
 
-    const userSettings = await UserSettings.findOne();
-    const scheduleDoc = await Schedule.findOne();
+    const userSettings = await UserSettings.findOne({ userId });
+    const scheduleDoc = await Schedule.findOne({ userId });
 
     if (!userSettings || !scheduleDoc) {
         return res.status(404).json({ message: "초기 설정을 먼저 완료하세요" });
@@ -53,7 +50,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
     if (nextPeriodInfo && nextPeriodInfo.subject) {
         const { day, hour, minute, subject, period } = nextPeriodInfo;
 
-        const existingChoice = await HourlyChoice.findOne({ day, hour });
+        const existingChoice = await HourlyChoice.findOne({ userId, day, hour });
         if (existingChoice) {
             return res.status(200).json({
                 message: `다음 ${period}교시(${subject})는 이미 선택을 완료했습니다.`,
@@ -65,12 +62,11 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
             day,
             hour,
             choiceType: "class",
-            question: `${
-                day === currentDay ? "다음" : "내일"
-            } ${period}교시 ${subject} 수업이 곧 시작됩니다 (${hour}:${String(minute).padStart(
-                2,
-                "0"
-            )}). 어떻게 하시겠습니까?`,
+            question: `${day === currentDay ? "다음" : "내일"
+                } ${period}교시 ${subject} 수업이 곧 시작됩니다 (${hour}:${String(minute).padStart(
+                    2,
+                    "0"
+                )}). 어떻게 하시겠습니까?`,
             options: [
                 { value: "attend_base", label: "수업 듣기", hasCost: false },
                 { value: "skip_base", label: "수업 결석", hasCost: false }
@@ -84,6 +80,7 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
      */
     if (currentDay !== -1) {
         const existingChoice = await HourlyChoice.findOne({
+            userId,
             day: currentDay,
             hour: currentHour
         });
@@ -96,10 +93,9 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
         }
     }
 
-    // 🔥 다음 교시에 수업이 없으면 → 무조건 AI 질문
     if (nextPeriodInfo && !nextPeriodInfo.subject) {
         try {
-            const rawStats = await getRawStatsInternal();
+            const rawStats = await getRawStatsInternal(userId);
             const weakestState = getWeakestState(rawStats);
 
             const aiChoices = await choiceForfreetime({
@@ -107,7 +103,6 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
                 weakestState
             });
 
-            // AI 정상 응답
             if (aiChoices && aiChoices.choices?.length === 2) {
                 return res.status(200).json({
                     day: nextPeriodInfo.day,
@@ -115,14 +110,12 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
                     choiceType: "ai_branch",
                     question: aiChoices.message,
                     options: aiChoices.choices.map(c => {
-                        // ✅ finance 카테고리면 무조건 비용 입력 필요
                         let hasCost = false;
                         let costPrompt = null;
 
                         if (c.category === "finance") {
                             hasCost = true;
-                            
-                            // ✅ 텍스트 기반으로 수입/지출 판단
+
                             const isIncome =
                                 c.label.includes("알바") ||
                                 c.label.includes("아르바이트") ||
@@ -153,7 +146,6 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
             console.error("AI 질문 생성 실패:", err.message);
         }
 
-        // ⚠ AI 실패 시 fallback
         return res.status(200).json({
             day: nextPeriodInfo.day,
             hour: nextPeriodInfo.hour,
@@ -183,10 +175,14 @@ const getHourlyQuestion = asyncHandler(async (req, res) => {
 });
 
 /**
- * 수업 선택 2단계 분기
+ * 수업 선택 2단계 분기 (사용자별)
  */
 const getHourlyBranchQuestion = asyncHandler(async (req, res) => {
-    const { day, hour, subject, baseChoice } = req.body;
+    const { day, hour, subject, baseChoice, userId } = req.body;
+
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
 
     if (baseChoice === "attend_base") {
         return res.status(200).json({
@@ -232,10 +228,11 @@ const getHourlyBranchQuestion = asyncHandler(async (req, res) => {
 });
 
 /**
- * 선택 저장 (평행우주 로직 추가 + 점수 반환 + category 전달)
+ * 선택 저장 (사용자별 평행우주 로직)
  */
 const saveHourlyChoice = asyncHandler(async (req, res) => {
     const {
+        userId,
         day,
         hour,
         choiceType,
@@ -248,7 +245,11 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
         category
     } = req.body;
 
-    console.log('📥 받은 데이터:', { choice, category, cost });  // 디버깅
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
+    console.log('📥 받은 데이터:', { userId, choice, category, cost });
 
     if (cost === undefined || cost === null) {
         return res.status(400).json({ message: "비용을 입력해주세요" });
@@ -256,19 +257,24 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
 
     // 1. 실제 우주 저장
     const changes = calculateStateChanges(choiceType, choice, cost, duration, category);
-    console.log('📊 계산된 변화량:', changes);  // 디버깅
-    
+    console.log('📊 계산된 변화량:', changes);
+
     const description =
         customDescription ||
         generateDescription(choiceType, choice, subject, changes.financeChange);
 
-    const settings = await UserSettings.findOne();
+    const settings = await UserSettings.findOne({ userId });
+    if (!settings) {
+        return res.status(404).json({ message: "사용자 설정을 찾을 수 없습니다" });
+    }
+
     settings.currentBudget += changes.financeChange;
     settings.totalSleepMinutes += changes.sleepChangeMinutes;
     settings.totalStudyMinutes += changes.studyChangeMinutes;
     await settings.save();
 
     const savedChoice = await HourlyChoice.create({
+        userId,
         day,
         hour,
         choiceType,
@@ -297,6 +303,7 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
         );
 
         await Branch.create({
+            userId,
             day,
             hour,
             choiceType,
@@ -318,6 +325,7 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
             );
 
             await Branch.create({
+                userId,
                 day,
                 hour,
                 choiceType,
@@ -332,7 +340,7 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
     }
 
     // 3. 현재 점수 계산
-    const currentStats = await getRawStatsInternal();
+    const currentStats = await getRawStatsInternal(userId);
 
     res.status(201).json({
         message: "선택이 저장되었습니다",

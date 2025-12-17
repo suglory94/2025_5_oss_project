@@ -4,10 +4,16 @@ const UserSettings = require("../models/userSettingsModel");
 const HourlyChoice = require("../models/hourlyChoiceModel");
 const Branch = require("../models/branchModel");
 
-// 설정 조회
+// 설정 조회 (사용자별)
 const getSettings = asyncHandler(async (req, res) => {
-    const settings = await UserSettings.findOne();
-    const schedule = await Schedule.findOne();
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
+    const settings = await UserSettings.findOne({ userId });
+    const schedule = await Schedule.findOne({ userId });
 
     if (!settings || !schedule) {
         return res.status(404).json({ message: "초기 설정을 먼저 완료하세요" });
@@ -19,13 +25,18 @@ const getSettings = asyncHandler(async (req, res) => {
     });
 });
 
-// 모든 선택 및 히스토리 초기화
+// 모든 선택 및 히스토리 초기화 (사용자별)
 const resetAllData = asyncHandler(async (req, res) => {
-    await HourlyChoice.deleteMany({});
-    await Branch.deleteMany({});
+    const { userId } = req.query;
 
-    // 설정 초기화 (예산, 수면, 학습 시간)
-    const settings = await UserSettings.findOne();
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
+    await HourlyChoice.deleteMany({ userId });
+    await Branch.deleteMany({ userId });
+
+    const settings = await UserSettings.findOne({ userId });
     if (settings) {
         settings.currentBudget = settings.initialBudget;
         settings.totalSleepMinutes = 0;
@@ -41,7 +52,6 @@ const resetAllData = asyncHandler(async (req, res) => {
 
 // 설명 생성 함수
 const generateDescription = (choiceType, choice, subject, cost) => {
-    // cost 포함 설명
     const costText = cost > 0 ? `+${cost.toLocaleString()}원` : cost < 0 ? `${cost.toLocaleString()}원` : '';
 
     const descriptions = {
@@ -148,27 +158,30 @@ const generateOpposite = async (choiceType, choice, cost, subject) => {
     };
 };
 
-// 통계 조회
+// 통계 조회 (사용자별)
 const getWeeklyStatistics = asyncHandler(async (req, res) => {
-    const settings = await UserSettings.findOne();
-    const schedule = await Schedule.findOne();
-    const choices = await HourlyChoice.find().sort({ day: 1, hour: 1 });
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
+    const settings = await UserSettings.findOne({ userId });
+    const schedule = await Schedule.findOne({ userId });
+    const choices = await HourlyChoice.find({ userId }).sort({ day: 1, hour: 1 });
 
     if (!settings || !schedule) {
         return res.status(404).json({ message: "데이터가 없습니다" });
     }
 
-    // 1. 일수 계산
     const daysPassed = Math.ceil(
         (Date.now() - settings.weekStartDate.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    // 2. 평균 수면 시간 계산
     const averageSleepHours = daysPassed > 0
         ? (settings.totalSleepMinutes / 60 / daysPassed).toFixed(1)
         : 0;
 
-    // 3. 출석률 계산
     const classChoices = choices.filter(c => c.choiceType === "class");
     const attendedClasses = classChoices.filter(
         c => c.choice === "attend" || c.choice === "attend_coffee"
@@ -179,13 +192,11 @@ const getWeeklyStatistics = asyncHandler(async (req, res) => {
         ? ((attendedClasses / totalClassHours) * 100).toFixed(1)
         : 0;
 
-    // 4. 재정 분석
     const totalSpent = settings.initialBudget - settings.currentBudget;
     const dailyAverageSpent = daysPassed > 0
         ? Math.round(totalSpent / daysPassed)
         : 0;
 
-    // 5. 활동 시간 집계
     const activities = {
         study: 0,
         exercise: 0,
@@ -202,7 +213,6 @@ const getWeeklyStatistics = asyncHandler(async (req, res) => {
         if (c.choice === "part_time") activities.partTime += c.duration;
     });
 
-    // 분 -> 시간 변환
     Object.keys(activities).forEach(key => {
         activities[key] = (activities[key] / 60).toFixed(1);
     });
@@ -237,12 +247,17 @@ const getWeeklyStatistics = asyncHandler(async (req, res) => {
     });
 });
 
-// 특정 날짜의 선택 조회
+// 특정 날짜의 선택 조회 (사용자별)
 const getDailyChoices = asyncHandler(async (req, res) => {
     const { day } = req.params;
+    const { userId } = req.query;
 
-    const choices = await HourlyChoice.find({ day: parseInt(day) }).sort({ hour: 1 });
-    const branches = await Branch.find({ day: parseInt(day) }).sort({ hour: 1 });
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
+    const choices = await HourlyChoice.find({ userId, day: parseInt(day) }).sort({ hour: 1 });
+    const branches = await Branch.find({ userId, day: parseInt(day) }).sort({ hour: 1 });
 
     res.status(200).json({
         day: parseInt(day),
@@ -251,32 +266,31 @@ const getDailyChoices = asyncHandler(async (req, res) => {
     });
 });
 
-// 선택 수정
+// 선택 수정 (사용자별)
 const updateChoice = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { choice, cost } = req.body;
+    const { choice, cost, userId } = req.body;
 
-    const hourlyChoice = await HourlyChoice.findById(id);
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
+    const hourlyChoice = await HourlyChoice.findOne({ _id: id, userId });
 
     if (!hourlyChoice) {
         return res.status(404).json({ message: "선택을 찾을 수 없습니다" });
     }
 
-    // 재정 재계산
-    const settings = await UserSettings.findOne();
+    const settings = await UserSettings.findOne({ userId });
 
-    // 기존 비용 롤백
     settings.currentBudget -= hourlyChoice.cost;
 
-    // 수면 시간 업데이트를 위해 기존 비용과 수면 시간을 롤백해야 함
     if (hourlyChoice.choice === "sleep") {
         settings.totalSleepMinutes -= hourlyChoice.duration;
     }
 
-    // 새 비용 적용
     settings.currentBudget += cost;
 
-    // 선택 업데이트
     hourlyChoice.choice = choice;
     hourlyChoice.cost = cost;
     hourlyChoice.description = generateDescription(
@@ -289,7 +303,6 @@ const updateChoice = asyncHandler(async (req, res) => {
     await hourlyChoice.save();
     await settings.save();
 
-    // 평행우주 업데이트
     if (hourlyChoice.choiceType !== "ai_branch") {
         const { oppositeChoice, oppositeCost, oppositeDescription } = await generateOpposite(
             hourlyChoice.choiceType,
@@ -299,7 +312,7 @@ const updateChoice = asyncHandler(async (req, res) => {
         );
 
         await Branch.updateOne(
-            { day: hourlyChoice.day, hour: hourlyChoice.hour },
+            { userId, day: hourlyChoice.day, hour: hourlyChoice.hour },
             {
                 oppositeChoice,
                 oppositeCost,
@@ -315,26 +328,27 @@ const updateChoice = asyncHandler(async (req, res) => {
     });
 });
 
-// 선택 삭제
+// 선택 삭제 (사용자별)
 const deleteChoice = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const { userId } = req.query;
 
-    const choice = await HourlyChoice.findById(id);
+    if (!userId) {
+        return res.status(400).json({ message: "userId가 필요합니다" });
+    }
+
+    const choice = await HourlyChoice.findOne({ _id: id, userId });
 
     if (!choice) {
         return res.status(404).json({ message: "선택을 찾을 수 없습니다" });
     }
 
-    // 재정 롤백
-    const settings = await UserSettings.findOne();
+    const settings = await UserSettings.findOne({ userId });
     settings.currentBudget -= choice.cost;
     await settings.save();
 
-    // 선택 삭제
     await HourlyChoice.findByIdAndDelete(id);
-
-    // 평행우주 삭제
-    await Branch.deleteOne({ day: choice.day, hour: choice.hour });
+    await Branch.deleteOne({ userId, day: choice.day, hour: choice.hour });
 
     res.status(200).json({
         message: "선택이 삭제되었습니다",
