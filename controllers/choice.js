@@ -238,7 +238,7 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
         choiceType,
         choice,
         subject,
-        cost,
+        cost = 0,  // 기본값 0 설정
         duration = 75,
         customDescription,
         parallelChoices,
@@ -251,12 +251,21 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
 
     console.log('📥 받은 데이터:', { userId, choice, category, cost });
 
-    if (cost === undefined || cost === null) {
-        return res.status(400).json({ message: "비용을 입력해주세요" });
+    // cost가 숫자가 아니면 0으로 처리
+    const validCost = isNaN(cost) ? 0 : Number(cost);
+
+    // 🔧 중복 저장 방지: 같은 시간에 이미 선택이 있는지 확인
+    const existingChoice = await HourlyChoice.findOne({ userId, day, hour });
+
+    if (existingChoice) {
+        return res.status(400).json({
+            message: "이미 이 시간에 선택을 완료했습니다.",
+            existingChoice
+        });
     }
 
     // 1. 실제 우주 저장
-    const changes = calculateStateChanges(choiceType, choice, cost, duration, category);
+    const changes = calculateStateChanges(choiceType, choice, validCost, duration, category);
     console.log('📊 계산된 변화량:', changes);
 
     const description =
@@ -280,7 +289,7 @@ const saveHourlyChoice = asyncHandler(async (req, res) => {
         choiceType,
         choice,
         subject,
-        cost,
+        cost: validCost,
         duration,
         description,
         ...changes
